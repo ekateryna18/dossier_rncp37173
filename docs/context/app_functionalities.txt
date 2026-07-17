@@ -1,0 +1,31 @@
+App de dance “Centre art & danse”: app to manage a dance school, where the owner of the school is the admin, can add teachers, parents and students in the app; the app has groups per category and category level, there is a page of creating publications per group and a mini chat in between the people of the school. The app serves as  an intern app to facilitate the communication and the gestion of the school, as the teachers can just write posts and messages in a group which is way easier than writing message to everyone in particular. Also the parents can follow the parcours of their kids. It is a web app, the website can be added as a web app in mobile, and notifications can be turned on to stay updated with the latest news.
+
+Roles dans l’app:
+
+- PROFESSOR (can create posts, (de)assign himself as prof to groups)
+- ADMIN (all rights + admin page, can delete posts)
+- SUPERVISOR = parent
+- STUDENT (lowest privilege, modify courses + followed groups) if +15 can creat account; if no the parent creates its kids in the app
+- STUDENT_SUPERVISOR = SUPERVISOR + STUDENT
+
+Fonctionallities:
+
+| Accueil | Groupes | Messagerie | Profil | login page |
+| --- | --- | --- | --- | --- |
+| ALL: View posts | ALL: view groups | ALL: send message to anyone | ALL: see infos perso | create account if +15 |
+| ALL: Like posts | ALL: view professors |  | ALL: modify infos perso | forgotten password |
+| ADMIN, PROFESSOR : create posts | ALL: view eleves |  | STUDENT_SUPERVISOR, SUPERVISOR: list my children | login with email and MDP |
+| ADMIN: delete posts | ADMIN, PROFESSOR : create posts in group |  | STUDENT_SUPERVISOR, SUPERVISOR: modify infos of one of his kids |  |
+|  | ALL: like post made in group |  | STUDENT_SUPERVISOR, SUPERVISOR: delete from app of one of his kids |  |
+|  | ADMIN, PROFESSOR :  assign/deassign himself from group |  |  |  |
+
+Admin:
+
+| Utilisateurs | Validation | Emails non vérifiés | Cours |
+| --- | --- | --- | --- |
+| statistiques | search bar | search bar | list all the courses |
+| view list users | validate account | list emails not verified | search bar |
+| search bar users | ban account | resend email to validate account | edit cours |
+| delete user | list emails to validate | email valid doar o ora | delete cours |
+| surpress user |  |  | create a cours |
+| create an account |  |  |  |

@@ -2,6 +2,8 @@ api-dance/
 app-dance/
 cdn-app-dance/
 
+/resources/DOSSIER-RNCP.pdf
+
 # Dependances (regenerables via npm install)
 node_modules/
 
