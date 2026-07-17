@@ -1,0 +1,155 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "p=\"$CLAUDE_PROJECT_DIR/.claude/hooks/inject-soul.js\"; [ -f \"$p\" ] || exit 0; exec node \"$p\""
+          },
+          {
+            "type": "command",
+            "command": "p=\"$CLAUDE_PROJECT_DIR/.claude/hooks/inject-tao.js\"; [ -f \"$p\" ] || exit 0; exec node \"$p\""
+          },
+          {
+            "type": "command",
+            "command": "p=\"$CLAUDE_PROJECT_DIR/.claude/hooks/soul-memory-check.js\"; [ -f \"$p\" ] || exit 0; exec node \"$p\""
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "p=\"$CLAUDE_PROJECT_DIR/.claude/hooks/inject-voice-anchor.js\"; [ -f \"$p\" ] || exit 0; exec node \"$p\""
+          },
+          {
+            "type": "command",
+            "command": "p=\"$CLAUDE_PROJECT_DIR/.claude/hooks/inject-delivery-default.js\"; [ -f \"$p\" ] || exit 0; exec node \"$p\""
+          },
+          {
+            "type": "command",
+            "command": "p=\"$CLAUDE_PROJECT_DIR/.claude/hooks/soul-memory-triggers.js\"; [ -f \"$p\" ] || exit 0; exec node \"$p\""
+          },
+          {
+            "type": "command",
+            "command": "p=\"$CLAUDE_PROJECT_DIR/.claude/hooks/fd-phase-guard.js\"; [ -f \"$p\" ] || exit 0; exec node \"$p\""
+          },
+          {
+            "type": "command",
+            "command": "p=\"$CLAUDE_PROJECT_DIR/.claude/hooks/strict-context-inject.js\"; [ -f \"$p\" ] || exit 0; exec node \"$p\""
+          },
+          {
+            "type": "command",
+            "command": "p=\"$CLAUDE_PROJECT_DIR/.claude/hooks/codex-autodelegate.js\"; [ -f \"$p\" ] || exit 0; exec node \"$p\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "p=\"$CLAUDE_PROJECT_DIR/.claude/hooks/mantra-validate.js\"; [ -f \"$p\" ] || exit 0; exec node \"$p\""
+          },
+          {
+            "type": "command",
+            "command": "p=\"$CLAUDE_PROJECT_DIR/.claude/hooks/fact-check-claims.js\"; [ -f \"$p\" ] || exit 0; exec node \"$p\""
+          },
+          {
+            "type": "command",
+            "command": "p=\"$CLAUDE_PROJECT_DIR/.claude/hooks/fd-response-check.js\"; [ -f \"$p\" ] || exit 0; exec node \"$p\""
+          },
+          {
+            "type": "command",
+            "command": "p=\"$CLAUDE_PROJECT_DIR/.claude/hooks/stage-to-byan.js\"; [ -f \"$p\" ] || exit 0; exec node \"$p\""
+          },
+          {
+            "type": "command",
+            "command": "p=\"$CLAUDE_PROJECT_DIR/.claude/hooks/strict-stop-guard.js\"; [ -f \"$p\" ] || exit 0; exec node \"$p\""
+          },
+          {
+            "type": "command",
+            "command": "p=\"$CLAUDE_PROJECT_DIR/.claude/hooks/autobench-stop-guard.js\"; [ -f \"$p\" ] || exit 0; exec node \"$p\""
+          },
+          {
+            "type": "command",
+            "command": "p=\"$CLAUDE_PROJECT_DIR/.claude/hooks/punt-guard.js\"; [ -f \"$p\" ] || exit 0; exec node \"$p\""
+          },
+          {
+            "type": "command",
+            "command": "p=\"$CLAUDE_PROJECT_DIR/.claude/hooks/plain-language-check.js\"; [ -f \"$p\" ] || exit 0; exec node \"$p\""
+          },
+          {
+            "type": "command",
+            "command": "p=\"$CLAUDE_PROJECT_DIR/.claude/hooks/agent-gate-check.js\"; [ -f \"$p\" ] || exit 0; exec node \"$p\""
+          },
+          {
+            "type": "command",
+            "command": "p=\"$CLAUDE_PROJECT_DIR/.claude/hooks/drain-advisory.js\"; [ -f \"$p\" ] || exit 0; exec node \"$p\""
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "p=\"$CLAUDE_PROJECT_DIR/.claude/hooks/tool-transparency.js\"; [ -f \"$p\" ] || exit 0; exec node \"$p\""
+          },
+          {
+            "type": "command",
+            "command": "p=\"$CLAUDE_PROJECT_DIR/.claude/hooks/fact-check-absolutes.js\"; [ -f \"$p\" ] || exit 0; exec node \"$p\""
+          },
+          {
+            "type": "command",
+            "command": "p=\"$CLAUDE_PROJECT_DIR/.claude/hooks/strict-scope-guard.js\"; [ -f \"$p\" ] || exit 0; exec node \"$p\""
+          }
+        ]
+      },
+      {
+        "matcher": "Workflow",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "p=\"$CLAUDE_PROJECT_DIR/.claude/hooks/tier-script-guard.js\"; [ -f \"$p\" ] || exit 0; exec node \"$p\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "p=\"$CLAUDE_PROJECT_DIR/.claude/hooks/tool-failure-guard.js\"; [ -f \"$p\" ] || exit 0; exec node \"$p\""
+          },
+          {
+            "type": "command",
+            "command": "p=\"$CLAUDE_PROJECT_DIR/.claude/hooks/leantime-fd-sync.js\"; [ -f \"$p\" ] || exit 0; exec node \"$p\""
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "p=\"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-compact-save.js\"; [ -f \"$p\" ] || exit 0; exec node \"$p\""
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,3 +1,18 @@
 api-dance/
-app-dance/ 
-cdn-app-dance/ 
+app-dance/
+cdn-app-dance/
+
+# Dependances (regenerables via npm install)
+node_modules/
+
+# Etat runtime / logs locaux (non essentiels au clone)
+_byan-output/
+.byan-strict/
+
+# OS / editeurs
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+.env.*

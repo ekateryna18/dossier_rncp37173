@@ -1,0 +1,9 @@
+bmb_creations_output_folder: '{project-root}/_byan-output/bmb-creations'
+user_name: Katy
+communication_language: English
+document_output_language: English
+output_folder: '{project-root}/_byan-output'
+platform: claude
+install_mode: custom
+byan_version: 2.48.0
+soul_mode: creator
