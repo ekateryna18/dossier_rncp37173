@@ -566,41 +566,170 @@ Ordre de priorité retenu, du plus urgent au moins urgent :
 
 ## 7. AMDEC, Analyse des Modes de Défaillance, Effets et Criticité
 
+*Périmètre : ce chapitre couvre exclusivement les défaillances accidentelles, techniques ou opérationnelles, survenant sans intention malveillante (panne, erreur de configuration, indisponibilité d'un service tiers). Les scénarios de menace intentionnelle sont traités dans le chapitre EBIOS RM (section 8).*
+
 ### Méthode et barème
 
-[à rédiger]
+IPR = G × O × D
+
+| Critère | Définition | Échelle |
+|---|---|---|
+| G, Gravité | Impact sur les utilisateurs et le service | 1 (négligeable) à 10 (catastrophique) |
+| O, Occurrence | Fréquence d'apparition estimée | 1 (quasi-impossible) à 10 (fréquent) |
+| D, Détectabilité | Difficulté à détecter la défaillance avant impact | 1 (immédiatement détecté) à 10 (indétectable) |
+
+Seuils : IPR inférieur à 50, acceptable. IPR entre 50 et 100, à surveiller. IPR supérieur à 100, action corrective prioritaire.
 
 ### Analyse par composant
 
-[à rédiger : AM-01, AM-02...]
+**AM-01, Backend, crash du processus applicatif**
+IPR : G 7 × O 2 × D 2 = 28, acceptable.
+Effet : l'ensemble de l'application dépend de ce composant unique ; son arrêt bloque à la fois les comptes, les groupes, les posts et la messagerie. Cause : exception non gérée ou fuite mémoire sur un processus de longue durée. Action corrective : mettre en place un mécanisme de supervision du processus avec redémarrage automatique, et exposer un point de contrôle de bon fonctionnement surveillé.
+
+**AM-02, Base de données, indisponibilité ou saturation**
+IPR : G 8 × O 2 × D 3 = 48, acceptable.
+Effet : toutes les fonctionnalités qui dépendent d'un accès à la base (comptes, groupes, posts, messagerie) deviennent indisponibles. Cause : pic de charge inhabituel, requête bloquante, ou panne du serveur qui héberge la base. Action corrective : surveiller la charge et les temps de réponse, prévoir une alerte en cas de dépassement de seuil.
+
+**AM-03, Base de données, absence de sauvegarde automatisée confirmée, CRITIQUE**
+IPR : G 10 × O 2 × D 8 = 160, action corrective prioritaire.
+Effet : en cas de panne matérielle ou de corruption de données, perte définitive et irréversible des données de tous les utilisateurs, y compris des données personnelles de mineurs. Cause : aucune stratégie de sauvegarde automatisée régulière n'a été confirmée à ce jour [à vérifier auprès de VNWeb avant la version finale de ce dossier]. La détectabilité est jugée mauvaise, une absence de sauvegarde ne se remarque pas tant qu'aucun incident ne survient. Action corrective : mettre en place une sauvegarde automatisée régulière de la base de données, avec test de restauration périodique, avant toute autre priorité de ce plan.
+
+**AM-04, Service de fichiers, échec du traitement de conversion des médias**
+IPR : G 5 × O 4 × D 3 = 60, à surveiller.
+Effet : l'envoi d'un fichier échoue pour l'utilisateur, sans qu'un message d'erreur clair n'explique la cause. Cause : fichier corrompu, format non attendu, ou traitement de compression qui échoue sur un fichier malformé. Action corrective : encadrer ce traitement d'une gestion d'erreur robuste qui échoue proprement plutôt que de bloquer le service entier, et valider le fichier avant traitement.
+
+**AM-05, Envoi d'email de validation de compte, échec de livraison**
+IPR : G 6 × O 3 × D 4 = 72, à surveiller.
+Effet : un nouvel utilisateur ne reçoit pas son lien de validation, valide une heure seulement ; seul l'admin peut renvoyer un nouveau lien, ce qui ajoute un délai humain à un problème déjà temporellement contraint. Cause : panne ou lenteur du service d'envoi d'email, boîte de réception pleine côté destinataire, ou domaine expéditeur mal configuré. Action corrective : surveiller les échecs de livraison et alerter au-delà d'un seuil, envisager d'allonger la durée de validité du lien ou d'permettre un renvoi self-service après expiration.
+
+**AM-06, Notifications push, échec silencieux d'envoi**
+IPR : G 4 × O 5 × D 4 = 80, à surveiller.
+Effet : un utilisateur ne reçoit pas la notification d'un nouveau message ou d'un nouveau post, sans qu'aucune alerte ne soit levée côté application ni côté utilisateur. Cause : abonnement expiré côté navigateur, ou identifiant de notification devenu invalide. Action corrective : consigner systématiquement les échecs d'envoi et surveiller leur fréquence, plutôt que de les laisser disparaître silencieusement dans les journaux.
+
+**AM-07, Canal de messagerie en temps réel, perte de connexion silencieuse**
+IPR : G 5 × O 3 × D 5 = 75, à surveiller.
+Effet : les messages échangés en temps réel (indicateur de saisie, réception immédiate) cessent de circuler sans que l'utilisateur ne soit informé de la coupure ; le message reste malgré tout enregistré, mais sa remise immédiate échoue. Cause : coupure réseau, redémarrage du serveur, ou défaillance du canal temps réel. Action corrective : afficher un indicateur de connexion visible côté interface, et prévoir une reconnexion automatique.
+
+**AM-08, Interface utilisateur (PWA), échec de mise à jour du Service Worker**
+IPR : G 6 × O 2 × D 4 = 48, acceptable.
+Effet : des utilisateurs restent bloqués sur une version obsolète de l'application installée, potentiellement privés d'un correctif de sécurité déjà déployé côté serveur. Cause : cache du navigateur qui ne se rafraîchit pas correctement après une mise à jour, ou erreur lors du déploiement d'une nouvelle version. Action corrective : forcer une vérification de mise à jour à l'ouverture de l'application, et informer l'utilisateur qu'une nouvelle version est disponible.
 
 ### Synthèse AMDEC
 
-[à rédiger]
+| Niveau | Composants | Action |
+|---|---|---|
+| Critique (IPR > 100) | Absence de sauvegarde de la base de données (AM-03, IPR 160) | Action immédiate, à traiter avant toute autre priorité de ce plan |
+| À surveiller (IPR 50 à 100) | Traitement des médias (AM-04, 60), envoi d'email de validation (AM-05, 72), notifications push (AM-06, 80), messagerie temps réel (AM-07, 75) | Mesures de surveillance et d'alerte à planifier dans le plan de sécurisation (section 9) |
+| Acceptable (IPR < 50) | Crash du backend (AM-01, 28), indisponibilité de la base (AM-02, 48), mise à jour du Service Worker (AM-08, 48) | Bonnes pratiques à maintenir |
 
 ---
 
 ## 8. EBIOS RM, Analyse des Menaces Intentionnelles
 
+EBIOS RM (Expression des Besoins et Identification des Objectifs de Sécurité, Risk Manager) est la méthode d'analyse de risques publiée par l'ANSSI. Elle est alignée sur ISO 27005, le standard international qui définit le cadre de gestion du risque lié à la sécurité de l'information, structurée en cinq ateliers.
+
+*Périmètre : ce chapitre couvre exclusivement les scénarios de menace intentionnelle impliquant un acteur malveillant. Les défaillances accidentelles sont traitées en section 7 (AMDEC). Chaque scénario identifie le pilier de la triade CIA affecté : Confidentialité, Intégrité, Disponibilité.*
+
 ### Atelier 1 : Cadrage et socle de sécurité
 
-[à rédiger : valeurs métier, biens supports, événements redoutés]
+L'atelier 1 délimite le périmètre de l'analyse et recense les actifs à protéger.
+
+**Valeurs métier**
+
+| ID | Valeur métier |
+|---|---|
+| VM-1 | Données personnelles des mineurs (identité, date de naissance, coordonnées) |
+| VM-2 | Confidentialité de la relation superviseur-enfant (qui supervise qui est une donnée sensible en soi) |
+| VM-3 | Disponibilité du service, utilisé au quotidien par l'école |
+| VM-4 | Intégrité des comptes, des rôles et des permissions |
+| VM-5 | Confidentialité des échanges de la messagerie privée |
+
+**Biens supports**
+
+| ID | Bien support | VM couverte |
+|---|---|---|
+| BS-1 | Backend (API, authentification, logique métier) | VM-1, VM-2, VM-3, VM-4, VM-5 |
+| BS-2 | Base de données (comptes, groupes, superviseurs, messages) | VM-1, VM-2, VM-4, VM-5 |
+| BS-3 | Service de fichiers (photos, avatars) | VM-1, VM-3 |
+| BS-4 | Interface utilisateur (PWA) | VM-1, VM-3 |
+| BS-5 | Canal de messagerie en temps réel | VM-3, VM-5 |
+| BS-6 | Mécanisme d'invitation de superviseur | VM-2, VM-4 |
+
+**Événements redoutés**
+
+| ID | Événement redouté | CIA |
+|---|---|---|
+| ER-1 | Exfiltration des données personnelles des mineurs | C |
+| ER-2 | Accès non autorisé à la supervision d'un enfant par un tiers illégitime | C |
+| ER-3 | Altération des rôles ou des permissions sans consentement | I |
+| ER-4 | Indisponibilité prolongée du service | D |
+| ER-5 | Interception ou accès non autorisé aux messages privés | C |
 
 ### Atelier 2 : Sources de risques et objectifs visés
 
-[à rédiger]
+| ID | Source de risque | Motivation | Capacité | Objectif visé |
+|---|---|---|---|---|
+| SR-1 | Cybercriminel externe opportuniste | Revente de données personnelles | Élevée, outillage automatisé | OV-1, exfiltrer les comptes et les données de mineurs |
+| SR-2 | Utilisateur interne (professeur ou parent) avec de mauvaises intentions | Curiosité, conflit familial, litige de garde | Faible, accès légitime limité | OV-2, accéder à la supervision ou aux données d'un enfant qui n'est pas le sien |
+| SR-3 | Attaquant opportuniste automatisé | Nuisance, défi technique | Moyenne, outils automatisés | OV-3, rendre le service indisponible |
+| SR-4 | Attaquant ayant obtenu des identifiants (hameçonnage, réutilisation de mot de passe) | Accès aux données d'un compte spécifique | Faible à moyenne | OV-4, usurper l'accès à un enfant via le compte de son parent |
 
 ### Atelier 3 : Scénarios stratégiques
 
-[à rédiger]
+| ID | Scénario | Source | Chemin | CIA |
+|---|---|---|---|---|
+| SS-1 | Compromission de l'API pour exfiltration de masse | SR-1 | Exploitation d'une faille de contrôle d'accès ou d'injection, accès à la base de données | C |
+| SS-2 | Détournement du mécanisme d'invitation de superviseur | SR-2 | Envoi d'une invitation à devenir superviseur d'un enfant qui n'est pas le sien, accès à ses données | C |
+| SS-3 | Déni de service sur les points d'entrée publics | SR-3 | Saturation des routes d'inscription ou de connexion | D |
+| SS-4 | Compromission d'un compte parent | SR-4 | Connexion avec des identifiants volés, accès aux enfants supervisés par ce compte | C |
 
 ### Atelier 4 : Scénarios opérationnels
 
-[à rédiger]
+**SO-1, bourrage d'identifiants sur la connexion**
+Issu de : SS-4 | CIA : Confidentialité
+Description : un attaquant teste des combinaisons d'adresse email et de mot de passe issues de fuites externes sur la page de connexion.
+Impact : compromission d'un compte parent, accès aux enfants supervisés par ce compte. Probabilité : Moyenne, la connexion dispose déjà d'une limitation de débit constatée dans le code (F-11). Contre-mesures : cette limitation existante est un vrai frein à conserver ; une authentification à deux facteurs pour les comptes superviseurs et une alerte sur connexion depuis un nouvel appareil renforceraient la protection.
+
+**SO-2, détournement du mécanisme d'invitation de superviseur**
+Issu de : SS-2 | CIA : Confidentialité
+Description : comme établi en F-01 (section 6.3), un utilisateur ayant un rôle autorisé à superviser des enfants en général peut inviter un tiers à devenir superviseur d'un enfant qui n'est pas le sien, en connaissant seulement son identifiant.
+Impact : accès non autorisé aux données personnelles d'un mineur par un tiers. Probabilité : Élevée, aucune barrière technique ne s'y oppose actuellement, il suffit de connaître l'identifiant de l'enfant. Contre-mesures : le correctif est déjà identifié en F-01 et positionné en tête de la priorisation du plan d'audit (section 6.4).
+
+**SO-3, réinitialisation de mot de passe abusive**
+Issu de : SS-1 ou SS-4 | CIA : Disponibilité, et Confidentialité de façon indirecte
+Description : comme établi en F-11 (section 6.3), aucune limitation de débit n'encadre la demande de réinitialisation de mot de passe, contrairement à la connexion.
+Impact : un attaquant peut solliciter massivement l'envoi de liens de réinitialisation, saturer le service d'envoi d'email, ou tenter de déterminer quelles adresses email correspondent à un compte existant. Probabilité : Élevée, la route est publique et aucune protection n'a été constatée. Contre-mesures : étendre à cette route la même limitation de débit que celle déjà en place sur la connexion.
+
+**SO-4, interception de la messagerie via une origine non autorisée**
+Issu de : SS-1 | CIA : Confidentialité
+Description : comme établi en F-02 (section 6.3), le canal de messagerie en temps réel accepte des connexions depuis n'importe quelle origine.
+Impact : un site tiers malveillant pourrait tenter d'établir une connexion au canal de messagerie depuis le navigateur d'une victime, pendant qu'elle le consulte en étant connectée à l'application. Probabilité : Moyenne, ce scénario suppose qu'une victime visite une page malveillante pendant qu'elle est connectée. Contre-mesures : restreindre l'origine autorisée à la même liste de domaines que l'API HTTP, déjà recommandé en F-02.
+
+**SO-5, injection de commande via l'envoi d'un fichier**
+Issu de : SS-1 | CIA : Intégrité et Disponibilité, potentiellement Confidentialité si le serveur est compromis
+Description : comme établi en F-10 (section 6.3), l'extension d'un fichier envoyé au service de fichiers n'est pas filtrée avant d'être utilisée dans un traitement exécuté directement sur le serveur.
+Impact : exécution de commandes arbitraires sur le serveur qui héberge le service de fichiers, l'un des scénarios les plus graves de ce dossier. Probabilité : à confirmer par un test dédié, déjà positionné comme priorité immédiate en F-10, mais techniquement plausible en l'absence de validation de l'extension. Contre-mesures : filtrer l'extension par liste blanche avant tout traitement, déjà en tête de la priorisation du plan d'audit.
+
+**SO-6, déni de service sur les routes d'inscription**
+Issu de : SS-3 | CIA : Disponibilité
+Description : un attaquant automatise un grand nombre de requêtes vers les routes publiques d'inscription pour saturer le service.
+Impact : service ralenti ou indisponible pour les utilisateurs légitimes. Probabilité : Moyenne, la connexion dispose déjà d'une limitation de débit, mais son extension aux routes d'inscription reste à vérifier. Contre-mesures : étendre la limitation de débit à toutes les routes publiques, pas seulement à la connexion.
 
 ### Atelier 5 : Traitement des risques
 
-[à rédiger]
+| Scénario | Risque sans mesure | Mesures retenues | Risque résiduel | Priorité |
+|---|---|---|---|---|
+| SO-2, détournement invitation superviseur | Très élevé | Vérification du lien superviseur-enfant avant invitation | Faible | P0, bloquant |
+| SO-5, injection de commande fichier | Très élevé | Filtrage de l'extension par liste blanche | Faible | P0, bloquant |
+| SO-3, réinitialisation abusive | Élevé | Limitation de débit alignée sur la connexion | Faible | P1 |
+| SO-4, messagerie origine ouverte | Élevé | Restriction de l'origine autorisée | Faible | P1 |
+| SO-1, bourrage d'identifiants connexion | Moyen, déjà limité | Authentification à deux facteurs (superviseurs), alerte nouvel appareil | Faible | P2 |
+| SO-6, déni de service inscription | Moyen | Extension de la limitation de débit | Faible | P2 |
+
+Risques bloquants avant toute mise en production :
+
+- SO-2 (détournement de l'invitation de superviseur) : tout envoi d'invitation doit vérifier que l'appelant est déjà superviseur de l'enfant ciblé.
+- SO-5 (injection de commande via l'envoi d'un fichier) : l'extension d'un fichier envoyé doit être filtrée par liste blanche avant tout traitement exécuté sur le serveur.
 
 ---
 
