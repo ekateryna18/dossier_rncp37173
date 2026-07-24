@@ -37,6 +37,8 @@ C'est cette cohérence entre le discours pédagogique et sa mise en œuvre effec
 
 Je réalise mon alternance au sein de l'entreprise VNWeb, une agence web spécialisée dans le développement informatique, implantée à Antibes. VNWeb est une structure à taille humaine : cinq personnes au total, dont quatre développeurs et le dirigeant. Cette dimension réduite m'a permis d'avoir rapidement des responsabilités concrètes et de contribuer directement aux projets clients.
 
+L'équipe affectée au projet Centre Art & Danse, dans le cadre de ma mission de sécurisation, est plus restreinte que l'agence entière : trois personnes, un développeur frontend, un développeur backend, et moi-même en tant qu'alternante en charge de la sécurité.
+
 Mon maître d'apprentissage est Vincent Nilles.
 
 Le rythme de l'alternance est le suivant : quatre jours en entreprise, un jour à l'école par semaine. Ce rythme très ancré en entreprise m'a offert une immersion professionnelle intensive, propice à l'acquisition rapide de compétences opérationnelles.
@@ -69,7 +71,8 @@ L'enjeu est renforcé par la nature des données traitées. La majorité des uti
 |---|---|---|
 | Vincent Nilles | Maître d'apprentissage, dirigeant VNWeb | Validation des orientations techniques et des priorités |
 | Ecaterina Munteanu | Développeuse fullstack, alternante | Sécurité applicative sur `api-dance`, `app-dance`, `cdn-app-dance` ; dossier RNCP |
-| [autres développeurs VNWeb impliqués sur ce projet] | [à préciser] | [à préciser] |
+| Développeur frontend, VNWeb | Développement des interfaces des projets clients | [nom à préciser] |
+| Développeur backend, VNWeb | Développement backend des projets clients | [nom à préciser] |
 
 | Acteur externe | Rôle | Attentes |
 |---|---|---|
@@ -88,7 +91,7 @@ L'enjeu est renforcé par la nature des données traitées. La majorité des uti
 - Mettre en place l'analyse statique de sécurité (SAST), l'audit des dépendances et la détection de secrets.
 - Conduire une analyse RGPD dédiée aux données des mineurs et documenter la base légale de leur traitement.
 - Clarifier et encadrer l'auto-assignation aux groupes, actuellement possible sans validation d'un tiers.
-- Statuer sur la surface encore exposée par les routes de commentaires non utilisées côté interface.
+- Filtrer par liste blanche l'extension de fichier utilisée dans les commandes exécutées par `cdn-app-dance`, un point remonté par le plan d'audit comme risque d'injection.
 
 **Critères de succès** :
 
@@ -198,9 +201,9 @@ Ce tableau reflète le périmètre fonctionnel réellement développé et vérif
 
 ### 4.3 Contraintes
 
-**Techniques** : la stack existante est imposée (AdonisJS/MySQL/Lucid pour `api-dance`, React/Ionic/Firebase pour `app-dance`, Express/Multer pour `cdn-app-dance`) ; le chantier de sécurisation porte sur l'existant, ce n'est pas une réécriture. L'application étant déjà en production, toute correction doit se faire sans interruption de service ni perte de données.
+**Techniques** : la stack existante est imposée (AdonisJS/MySQL/Lucid pour `api-dance`, React/Ionic pour `app-dance`, Express/Multer pour `cdn-app-dance`) ; le chantier de sécurisation porte sur l'existant, ce n'est pas une réécriture. L'application étant déjà en production, toute correction doit se faire sans interruption de service ni perte de données.
 
-**Organisationnelles** : l'équipe VNWeb est réduite à cinq personnes, dont quatre développeurs ; la sécurisation n'est pas un chantier à temps plein dédié, elle s'insère dans le rythme de l'alternance (quatre jours en entreprise, un jour à l'école par semaine). Les priorités sont validées par Vincent Nilles, maître d'apprentissage et dirigeant de VNWeb.
+**Organisationnelles** : VNWeb compte cinq personnes au total, mais l'équipe affectée au projet Centre Art & Danse est réduite à trois personnes, un développeur frontend, un développeur backend et l'alternante en charge de la sécurité ; la sécurisation n'est pas un chantier à temps plein dédié, elle s'insère dans le rythme de l'alternance (quatre jours en entreprise, un jour à l'école par semaine). Les priorités sont validées par Vincent Nilles, maître d'apprentissage et dirigeant de VNWeb.
 
 **Réglementaires** : conformité RGPD requise, avec une attention particulière portée aux données des mineurs, notamment les élèves de moins de 15 ans dont le profil est géré par le compte de leur parent superviseur.
 
@@ -211,14 +214,14 @@ Ce tableau reflète le périmètre fonctionnel réellement développé et vérif
 **P1, comment sécuriser une application déjà exposée en production, avec des données réelles de familles, sans qu'aucun audit n'ait précédé sa mise en ligne ?**
 Solution retenue : une démarche corrective priorisée par criticité (section 6), en traitant en premier les parcours touchant les données des mineurs (comptes, messagerie), avant de mettre en place les garde-fous durables (pipeline CI/CD, politique de sécurité formalisée).
 
-**P2, comment intégrer une pratique de sécurité durable dans une équipe de cinq personnes, sans expert cybersécurité dédié en interne ?**
+**P2, comment intégrer une pratique de sécurité durable dans une équipe de projet de trois personnes, sans expert cybersécurité dédié en interne ?**
 Solution retenue : confier la mission de sécurisation à l'alternante en parallèle de sa formation RNCP37173, avec une mise en place progressive d'outils automatisés (analyse statique, audit de dépendances, détection de secrets) plutôt qu'un contrôle manuel récurrent qui ne serait pas soutenable dans le temps.
 
 **P3, comment garantir qu'aucune régression fonctionnelle n'accompagne les corrections de sécurité, alors qu'aucune suite de tests automatisés n'existe sur le projet ?**
 Constat : à ce jour, aucun test automatisé n'a été écrit sur `api-dance`, `app-dance` ou `cdn-app-dance`. La vérification de non-régression repose uniquement sur des essais manuels avant mise en production.
 Solution retenue : maintenir la validation manuelle ciblée sur le parcours modifié à chaque correction de sécurité, et positionner la construction d'une suite de tests automatisés comme un chantier à part entière du plan de sécurisation (section 9), et non comme un prérequis bloquant les corrections urgentes.
 
-**P4, comment traiter les écarts découverts pendant l'analyse du code (routes de commentaires encore actives côté backend malgré leur retrait de l'interface, redondance entre `isAdmin` et `status`, absence de vérification du lien superviseur-enfant sur l'invitation d'un tiers) sans bloquer l'avancement du chantier ?**
+**P4, comment traiter les écarts découverts pendant l'analyse du code (redondance entre `isAdmin` et `status`, absence de vérification du lien superviseur-enfant sur l'invitation d'un tiers, risque d'injection via l'extension de fichier non filtrée dans `cdn-app-dance`) sans bloquer l'avancement du chantier ?**
 Solution retenue : chaque écart est documenté et traité comme point d'audit à part entière (sections 6 et 9), plutôt que corrigé au fil de l'eau sans traçabilité.
 
 ### 4.5 Gestion de projet, WBS et suivi Kanban
@@ -245,11 +248,13 @@ Le code est hébergé sur Gitea. Le suivi des tâches du projet se fait sur l'ex
 | US-02 | En tant que responsable sécurité, je veux auditer le contrôle d'accès sur les endpoints manipulant des données d'enfants supervisés, afin de vérifier qu'un utilisateur ne peut pas accéder aux données d'un enfant qui n'est pas le sien. | Must | À faire |
 | US-03 | En tant que VNWeb, je veux une analyse RGPD dédiée aux données des mineurs, afin de documenter la base légale de leur traitement. | Must | À faire |
 | US-04 | En tant qu'admin, je veux que l'auto-assignation aux groupes soit clarifiée, afin d'éviter qu'un élève rejoigne un groupe qui ne le concerne pas sans aucun contrôle. | Should | À faire |
-| US-05 | En tant que responsable sécurité, je veux statuer sur les routes de commentaires encore actives côté backend mais retirées de l'interface, afin de réduire la surface d'attaque exposée inutilement. | Should | À faire |
+| US-05 | En tant que responsable sécurité, je veux que l'extension d'un fichier uploadé soit filtrée par liste blanche avant d'être utilisée dans une commande exécutée sur le serveur (`cdn-app-dance`), afin d'empêcher une injection de commande via un nom de fichier construit à cet effet. | Must | À faire |
 | US-06 | En tant que développeuse, je veux résoudre la redondance entre `isAdmin` et `status` pour l'adminship, afin d'éviter une incohérence exploitable dans les contrôles d'accès. | Could | À faire |
 | US-07 | En tant que responsable sécurité, je veux qu'une invitation de superviseur ne puisse être envoyée que par un utilisateur déjà superviseur de l'enfant concerné, afin qu'un professeur ou un superviseur d'un autre enfant ne puisse pas donner accès aux données d'un mineur qui ne le concerne pas. | Must | À faire |
+| US-08 | En tant que responsable sécurité, je veux restreindre l'origine autorisée sur le serveur socket.io (actuellement `origin: '*'`) à des domaines connus, afin qu'un site tiers ne puisse pas se connecter au canal de messagerie privée. | Must | À faire |
+| US-09 | En tant que développeuse, je veux retirer le code mort issu du gabarit AdonisJS Transmit (`ChannelsController`), afin de réduire la surface d'attaque et la charge de maintenance à du code réellement actif. | Could | À faire |
 
-Cet extrait reprend les objectifs restants déjà identifiés en section 2.3 et les écarts relevés dans l'analyse du code, reformulés en user stories.
+Cet extrait reprend les objectifs restants déjà identifiés en section 2.3, les écarts relevés dans l'analyse du code de la section 4.4, et les constats faits lors de la rédaction de l'architecture (section 5), reformulés en user stories.
 
 ---
 
@@ -257,33 +262,186 @@ Cet extrait reprend les objectifs restants déjà identifiés en section 2.3 et 
 
 ### 5.1 Architecture de l'application
 
-[à rédiger : schéma d'ensemble et rôle de chaque composant (api-dance, app-dance, cdn-app-dance, base de données, services tiers).]
+L'application est découpée en trois sous-projets indépendants, chacun avec sa propre base de code et son propre cycle de déploiement, plus une base de données partagée et des services tiers.
+
+```
+                     (navigateur, installé en PWA)
+                            app-dance
+                    /            |            \
+        API REST + temps réel    |      upload / diffusion
+       (HTTP, SSE, WebSocket)    |          de fichiers
+                /                |                \
+           api-dance             |          cdn-app-dance
+                |                |
+            MySQL          notifications push
+        (via Lucid ORM)    (web-push, vers les
+                            navigateurs abonnés)
+```
+
+**Rôle de chaque composant :**
+
+| Composant | Rôle | Technologie principale | Expose / Consomme |
+|---|---|---|---|
+| `app-dance` | Client web installable (PWA) | React 19, Ionic React, Vite | Consomme l'API REST et le temps réel de `api-dance` ; dépose et récupère les fichiers via `cdn-app-dance` |
+| `api-dance` | Backend métier, source de vérité des données | AdonisJS 6, Lucid, MySQL | Expose l'API REST, le temps réel (Server-Sent Events via Transmit, WebSocket via socket.io), gère l'authentification et l'envoi des notifications push |
+| `cdn-app-dance` | Service dédié au dépôt et à la diffusion de fichiers | Express 5, Multer | Reçoit les fichiers uploadés (photos de cours, avatars) et les sert ensuite en lecture |
+| Base de données | Persistance, 17 tables (voir le schéma détaillé) | MySQL, accédée uniquement par `api-dance` via l'ORM Lucid | Stocke comptes, rôles, groupes, posts, messages, tokens, abonnements aux notifications |
+| web-push | Notifications navigateur | `web-push` côté `api-dance` | Envoie les notifications push aux navigateurs abonnés (table `subscriptions`) |
+
+`cdn-app-dance` est volontairement isolé des deux autres sous-projets : il ne partage ni code ni base de données avec `api-dance`, ce qui limite ce qu'un incident sur ce service pourrait exposer au reste de la plateforme.
 
 ### 5.2 CDCT, Choix Des Composants Technologiques
 
+La stack décrite ci-dessous existait déjà avant le début de ma mission de sécurisation. Cette section documente ce qui justifie techniquement ces choix aujourd'hui, ce n'est pas un compte-rendu de la décision d'origine chez VNWeb.
+
 #### 5.2.1 Framework backend
 
-[à rédiger : pourquoi AdonisJS pour api-dance]
+`api-dance` repose sur AdonisJS 6, un framework Node.js/TypeScript complet plutôt qu'un assemblage de briques indépendantes (type Express seul). Ce choix apporte, de série, plusieurs éléments directement utiles à un projet manipulant des données de mineurs : un ORM intégré (Lucid), un module d'authentification (`@adonisjs/auth`), un module d'autorisation par politiques (`@adonisjs/bouncer`), une validation de schéma stricte (VineJS) et une limitation de débit (`@adonisjs/limiter`). Ces briques viennent du même écosystème et suivent le même cycle de mises à jour, ce qui réduit le risque d'incohérence de version entre des dépendances de sécurité choisies séparément.
 
 #### 5.2.2 Base de données et ORM
 
-[à rédiger : pourquoi MySQL/Lucid]
+Le choix de MySQL, accédé via l'ORM Lucid, correspond à un domaine fortement relationnel : comptes liés à des rôles, superviseurs liés à des enfants, utilisateurs liés à des groupes, posts liés à des médias et des likes. Les clés étrangères avec suppression en cascade, présentes sur la quasi-totalité des tables, garantissent qu'un enfant supprimé n'y laisse pas de données orphelines. Les migrations Lucid, versionnées et horodatées, donnent un historique exact et auditable du schéma, c'est d'ailleurs à partir de ces 42 fichiers de migration que le schéma de données de ce dossier a été reconstitué. Une configuration Postgres existe dans le code (`config/database.ts`) mais elle est désactivée, seule la connexion MySQL est active.
 
 #### 5.2.3 Framework frontend
 
-[à rédiger : pourquoi React/Ionic pour app-dance]
+`app-dance` utilise React 19 avec Ionic React plutôt qu'un développement natif séparé pour mobile et web. Ionic apporte des composants d'interface proches d'une application mobile native tout en restant une PWA installable depuis le navigateur, un choix cohérent avec le fait que l'application doit être utilisée aussi bien par des parents que par des professeurs sur des appareils variés, sans passer par un store d'application. Vite assure un temps de build et de rechargement à chaud réduit par rapport à des outils plus anciens (Webpack), ce qui compte pour la vitesse d'itération d'une équipe de deux développeurs.
 
 #### 5.2.4 Service d'authentification / services tiers
 
-[à rédiger]
+L'authentification principale repose sur `@adonisjs/auth`, avec des jetons d'accès stockés côté `api-dance` (table `auth_access_tokens`). Aucun service d'authentification tiers n'est réellement utilisé par l'application : l'intégralité du cycle de connexion, de validation de compte et de gestion des jetons est portée par `api-dance`.
 
 #### 5.2.5 Service de stockage et diffusion de fichiers
 
-[à rédiger : pourquoi un service CDN dédié (cdn-app-dance) plutôt qu'un stockage intégré à api-dance]
+`cdn-app-dance` est un service Express séparé, dédié à la réception (Multer) et à la diffusion des fichiers, plutôt qu'un stockage intégré directement à `api-dance`. Séparer ce service isole la surface d'attaque propre à la réception de fichiers (validation de type, de taille, chemin de stockage) du reste de la logique métier : une faille sur l'upload ne donne pas un accès direct à la base de données ou aux jetons d'authentification, qui restent uniquement du ressort de `api-dance`. Ce choix a cependant un revers déjà identifié : aucun mécanisme d'authentification n'a été repéré sur ce service, un point qui devra être traité en priorité lors de l'audit (section 6).
 
-#### 5.2.6 [Autre décision structurante à documenter]
+#### 5.2.6 Coexistence de deux mécanismes temps réel (Transmit et socket.io)
 
-[à rédiger]
+Le backend déclare à la fois `@adonisjs/transmit` (Server-Sent Events) et `socket.io`. La lecture du code montre que seul `socket.io` est réellement utilisé : il porte la messagerie privée 1-à-1 (indicateur de saisie, envoi de message, marquage comme lu), câblé dans `start/ws.ts` et consommé côté client par `app-dance`. Transmit est installé, son fournisseur est enregistré et sa configuration existe (`config/transmit.ts`), mais son seul point d'usage dans le code (`ChannelsController.join`, un exemple de canal de démonstration) n'est relié à aucune route : c'est du code mort, un reliquat du gabarit de démarrage d'AdonisJS Transmit, pas une fonctionnalité active.
+
+En creusant ce point, un autre constat mérite d'être noté ici : le serveur socket.io est configuré avec `cors: { origin: '*' }` (`start/ws.ts`), une autorisation ouverte à n'importe quelle origine. Sur un canal qui transporte des messages privés, c'est un point à vérifier en priorité lors de l'audit (section 6).
+
+### 5.3 Benchmark détaillé des choix technologiques
+
+Cette section compare, choix par choix, la technologie réellement utilisée dans `api-dance` / `app-dance` / `cdn-app-dance` avec des alternatives sérieuses du marché, et motive pourquoi le choix en place tient ou ne tient pas face à ces alternatives. Chaque constat de configuration cité est vérifié dans le code, pas supposé. Niveau de preuve indiqué par choix (`Niv`) : L1, spécification officielle ou standard reconnu (RFC, OWASP ASVS) ; L2, documentation produit officielle ou recommandation d'un organisme de référence (OWASP Cheat Sheet Series) ; L3, consensus technique large sans texte normatif unique.
+
+#### 5.3.1 Framework backend : AdonisJS
+
+**Choix en place** : AdonisJS 6, TypeScript, avec ORM (Lucid), authentification (`@adonisjs/auth`), autorisation (`@adonisjs/bouncer`), validation (VineJS) et limitation de débit (`@adonisjs/limiter`) intégrés au même framework.
+
+| Option | Modules de sécurité intégrés | Maturité de l'écosystème Node | Courbe d'apprentissage pour une équipe TypeScript | Niv |
+|---|---|---|---|---|
+| AdonisJS 6 (retenu) | Auth, autorisation, validation, rate limiting fournis nativement, versionnés ensemble | Écosystème plus restreint que Express, mais complet pour les besoins d'un CRUD applicatif | Structure proche de Laravel/NestJS, familière pour une équipe déjà orientée TypeScript | L2 |
+| Express (nu) | Aucun, chaque brique de sécurité est une dépendance tierce choisie et maintenue séparément | Écosystème le plus large du marché Node | Minimaliste, mais tout le socle sécurité est à assembler soi-même | L3 |
+| NestJS | Modules de sécurité disponibles mais souvent via des paquets tiers (Passport, class-validator) | Écosystème large, orienté entreprise | Injection de dépendances et décorateurs, courbe plus raide pour une petite équipe | L2 |
+| Fastify | Plugins de sécurité disponibles (helmet, rate-limit) mais à assembler | Écosystème solide, orienté performance brute | Minimaliste comme Express, assemblage manuel du socle sécurité | L3 |
+
+**Recommandation** : AdonisJS reste le choix le plus cohérent pour une équipe de projet de trois personnes sans expert sécurité dédié en interne : avoir l'authentification, l'autorisation, la validation et le rate limiting du même éditeur, mis à jour ensemble, réduit le risque qu'une brique de sécurité tierce prenne du retard sans que personne ne s'en aperçoive. Express ou Fastify auraient demandé d'assembler et de maintenir ce socle à la main, un coût que la taille de l'équipe ne permet pas d'absorber durablement. Ce choix a un revers déjà visible dans ce projet : une partie du socle de sécurité (CORS restreint sur l'API HTTP) est bien configurée, mais une autre (CORS ouvert sur le canal socket.io, voir 5.3.7) ne l'est pas, ce qui montre que le cadre fourni par le framework ne suffit pas seul, il doit être appliqué de façon uniforme sur toute la surface exposée.
+
+#### 5.3.2 ORM et accès aux données : Lucid
+
+**Choix en place** : Lucid (ORM natif d'AdonisJS), requêtes construites via le query builder plutôt qu'en SQL brut concaténé, migrations versionnées dans `database/migrations`.
+
+| Option | Protection native contre l'injection SQL | Historique de schéma auditable | Coût de flexibilité (requêtes complexes) | Niv |
+|---|---|---|---|---|
+| Lucid (retenu) | Paramétrage automatique des requêtes du query builder | Migrations horodatées, rejouables, c'est la source utilisée pour reconstituer le schéma de ce projet | Requêtes très complexes parfois plus verbeuses qu'en SQL brut | L2 |
+| SQL brut (requêtes manuelles) | Dépend entièrement de la discipline du développeur à paramétrer chaque requête | Aucun, le schéma vit uniquement dans la tête de l'équipe ou une documentation externe à maintenir à la main | Contrôle total, mais un seul oubli de paramétrage ouvre une injection SQL (OWASP Top 10, catégorie A03, Injection) | L1 |
+| Prisma | Requêtes paramétrées automatiquement, schéma déclaratif dans un fichier unique | Migrations versionnées, générées à partir du schéma déclaratif | Moins intégré nativement à AdonisJS, demande une couche de compatibilité | L2 |
+| TypeORM / Sequelize | Requêtes paramétrées automatiquement | Migrations versionnées | Mature mais historiquement moins actif sur AdonisJS que Lucid, qui est l'ORM de référence du framework | L3 |
+
+**Recommandation** : Lucid reste le choix le plus défendable ici, pas seulement par confort d'intégration : le paramétrage automatique des requêtes ferme par construction la catégorie d'injection SQL la plus répandue (OWASP Top 10, A03), sur une application qui manipule des données de mineurs. Face au SQL brut, la différence n'est pas une question de style mais de surface d'erreur humaine possible à chaque requête écrite. Face à Prisma, TypeORM ou Sequelize, l'écart se joue sur l'intégration native à AdonisJS plutôt que sur la sécurité, les quatre ORM protégeant équivalemment contre l'injection par paramétrage.
+
+#### 5.3.3 Base de données : MySQL
+
+**Choix en place** : MySQL, via le pilote `mysql2`, configuré dans `config/database.ts`. Une configuration PostgreSQL existe dans le même fichier mais reste désactivée.
+
+| Option | Adéquation au modèle relationnel du projet | Coût opérationnel pour une équipe de projet de 3 personnes | Support des contraintes d'intégrité (clés étrangères en cascade) | Niv |
+|---|---|---|---|---|
+| MySQL (retenu) | Fort : comptes, groupes, superviseurs et posts sont fortement relationnels avec des clés étrangères en cascade | Faible, hébergement et outillage largement répandus | Complet, déjà utilisé sur les 17 tables du schéma actuel | L2 |
+| PostgreSQL | Fort, équivalent à MySQL sur ce type de modèle, avec en plus des types avancés (JSONB indexé, contraintes `CHECK` plus riches) | Comparable à MySQL | Complet | L2 |
+| MongoDB (document) | Faible : le modèle actuel repose sur des relations many-to-many strictes (superviseurs/enfants, utilisateurs/groupes), qui demanderaient une dénormalisation manuelle en base documentaire | Comparable | Pas de clé étrangère native, l'intégrité référentielle serait à recoder côté application | L3 |
+
+**Recommandation** : MySQL est un choix cohérent pour ce modèle de données, mais pas parce qu'il serait supérieur à PostgreSQL dans l'absolu : les deux conviennent également bien à un schéma aussi relationnel. Le point qui mérite d'être tranché n'est pas MySQL contre PostgreSQL, c'est la configuration PostgreSQL laissée présente mais désactivée dans le code : soit elle documente une migration envisagée à retirer proprement si elle n'est plus d'actualité, soit elle doit rester à jour si une bascule reste possible. MongoDB, en revanche, n'aurait pas été un bon choix ici : le modèle de données du projet est relationnel par nature, pas documentaire.
+
+#### 5.3.4 Forme de l'application côté client : PWA (React + Ionic) et impact sécurité
+
+**Choix en place** : `app-dance` est une PWA (Progressive Web App) installable, construite avec React 19 et Ionic React, plutôt qu'une application native ou un développement natif séparé par plateforme.
+
+| Option | Distribution | Surface d'attaque spécifique | Contrôle de l'éditeur sur les mises à jour de sécurité | Niv |
+|---|---|---|---|---|
+| PWA (retenu) | Installation directe depuis le navigateur, sans passage par un store d'application | Le Service Worker et le cache applicatif deviennent une surface à sécuriser explicitement (données mises en cache localement, y compris potentiellement des informations sur des mineurs) | Mise à jour immédiate au prochain chargement, aucune validation d'un store tiers ne retarde un correctif de sécurité | L2 |
+| Application native (Swift/Kotlin, une par plateforme) | Passage obligatoire par l'App Store / Google Play, avec leurs propres contrôles de sécurité à la soumission | Stockage natif sécurisé disponible (Keychain, Keystore), mais deux bases de code distinctes à sécuriser séparément | Délai de validation du store avant qu'un correctif de sécurité atteigne les utilisateurs | L2 |
+| React Native / Flutter (cross-platform natif) | Passage par les stores, un seul code source pour les deux plateformes | Stockage natif sécurisé disponible comme en natif pur | Même délai de validation de store que le natif pur | L2 |
+
+**Recommandation** : le choix de la PWA n'est pas neutre en sécurité, dans les deux sens. Il retire la dépendance à un store tiers pour distribuer un correctif urgent, un vrai atout pour une application qui manipule des données de mineurs et qui doit pouvoir être corrigée vite. En contrepartie, il déplace la responsabilité de sécuriser le stockage local vers le Service Worker et le cache du navigateur, un point que l'audit (section 6) doit vérifier explicitement : ce que l'application met en cache côté client, et si des données personnelles d'enfants s'y retrouvent au-delà de ce qui est strictement nécessaire à l'usage hors ligne. Une application native aurait offert un stockage local chiffré fourni par l'OS (Keychain/Keystore), ce que le navigateur ne propose pas nativement au même niveau de garantie.
+
+#### 5.3.5 Hachage des mots de passe : scrypt
+
+**Choix en place, vérifié dans `config/hash.ts`** :
+
+```
+default: 'scrypt'
+scrypt: { cost: 16384, blockSize: 8, parallelization: 1, maxMemory: 33554432 }
+```
+
+Ce sont les paramètres par défaut fournis par AdonisJS pour le pilote scrypt, non retouchés pour ce projet.
+
+| Option | Résistance au calcul massivement parallèle (GPU/ASIC) | Recommandation OWASP (Password Storage Cheat Sheet) | Statut sur ce projet | Niv |
+|---|---|---|---|---|
+| scrypt (retenu) | Élevée, algorithme à mémoire coûteuse conçu pour limiter le parallélisme matériel | Cité comme option acceptable, en dessous d'Argon2id dans l'ordre de préférence OWASP | En place, paramètres par défaut du framework, non audités ni ajustés au contexte de cette application | L2 |
+| Argon2id | Élevée, vainqueur de la Password Hashing Competition (2015), paramétrable en mémoire, temps et parallélisme | Premier choix recommandé par OWASP pour le hachage de mot de passe | Non utilisé sur ce projet | L1 |
+| bcrypt | Bonne, mais coût uniquement en temps CPU, pas en mémoire, donc plus sensible à l'accélération GPU qu'un algorithme à coût mémoire | Deuxième choix recommandé par OWASP, si Argon2id n'est pas disponible | Non utilisé sur ce projet | L2 |
+| PBKDF2 | Plus faible que les trois précédents, coût purement CPU, sans composante mémoire | Dernier choix recommandé par OWASP, à réserver aux environnements contraints (ex. certification FIPS) | Non utilisé sur ce projet | L2 |
+
+**Recommandation** : scrypt n'est pas un mauvais choix, il figure dans la liste des algorithmes acceptés par OWASP pour le stockage de mots de passe, et il est nettement préférable à un simple hachage rapide (MD5, SHA-256 seul, sans dérivation de clé lente). Mais deux points méritent d'être remontés dans l'audit de sécurité (section 6) plutôt que d'être laissés tels quels : d'une part, Argon2id est la recommandation de premier rang d'OWASP et n'a pas été retenu ici sans qu'une raison documentée n'explique ce choix ; d'autre part, les paramètres actuels (`cost: 16384`, `maxMemory: 32 Mo`) sont ceux fournis par défaut par AdonisJS, pas des valeurs choisies après une analyse du contexte de menace de ce projet précis. Un paramètre de coût non revu n'est pas nécessairement insuffisant, mais il n'a pas non plus été validé comme suffisant.
+
+#### 5.3.6 Stockage des données sensibles hors mot de passe
+
+**Constat vérifié dans le code** : la clé `APP_KEY` existe (`config/app.ts`), utilisée par le framework pour le chiffrement des cookies et la signature d'URL, mais aucun usage du module de chiffrement d'AdonisJS n'a été trouvé dans `app/` pour chiffrer une colonne applicative. Les colonnes contenant des données personnelles des mineurs (`birth_date`, `phone_number`, `address`, `postal_code`, `city`, `first_name`, `last_name`) sont stockées en clair dans la table `users`, protégées uniquement par le contrôle d'accès applicatif et par la sécurité de la base de données elle-même.
+
+| Option | Protection si la base de données est copiée ou compromise directement | Complexité d'implémentation | Impact sur les requêtes (recherche, tri) | Niv |
+|---|---|---|---|---|
+| Colonnes en clair (situation actuelle) | Aucune, toute donnée est lisible dès l'accès à la base | Nulle, c'est l'état par défaut d'une colonne SQL classique | Aucun, recherche et tri natifs | L3 |
+| Chiffrement au niveau champ (colonnes sensibles chiffrées avec la clé applicative) | Les colonnes chiffrées restent illisibles sans la clé applicative, même en cas de copie de la base seule | Moyenne, chiffrement/déchiffrement à chaque lecture/écriture, gestion de la clé à part de la base | Recherche et tri natifs perdus sur les colonnes chiffrées, à contourner par des colonnes dérivées ou un index séparé | L2 |
+| Chiffrement au niveau disque uniquement (chiffrement du volume de la base) | Protège contre le vol physique du support, pas contre un accès applicatif ou un identifiant de base compromis | Faible, géré par l'hébergeur ou le système de fichiers, sans changement de code | Aucun impact sur les requêtes | L2 |
+
+**Recommandation** : le chiffrement au niveau champ n'est pas systématiquement le bon choix pour toutes les colonnes, il ajoute de la complexité et casse la recherche native. Mais pour ce projet précis, où les données concernent en majorité des mineurs, il mérite d'être évalué au moins sur les colonnes les plus sensibles (date de naissance, adresse), en complément du chiffrement de disque qui protège un scénario différent (vol du support physique) et ne dispense pas d'un chiffrement applicatif si l'objectif est de résister aussi à une fuite d'identifiants de connexion à la base. Ce point est à traiter dans le plan de sécurisation (section 9), pas comme une correction immédiate isolée : il a un impact sur le modèle de données et sur les requêtes existantes.
+
+#### 5.3.7 Communication en temps réel : socket.io retenu face à Transmit
+
+**Constat déjà établi en 5.2.6** : socket.io est le seul canal temps réel réellement utilisé (messagerie privée), Transmit est installé mais son seul point d'usage n'est relié à aucune route. Point supplémentaire vérifié ici : le serveur socket.io est configuré avec `cors: { origin: '*' }` (`start/ws.ts`), alors que l'API HTTP principale, elle, restreint ses origines à une liste explicite (`config/cors.ts` : domaines de l'application et de préproduction uniquement). Le cadre de sécurité existe donc dans ce projet, il n'a simplement pas été appliqué de façon uniforme sur le canal temps réel.
+
+| Option | Origine autorisée | Cohérence avec la politique CORS déjà en place sur l'API HTTP | Niv |
+|---|---|---|---|
+| Configuration actuelle du canal socket.io | `*`, n'importe quelle origine | Incohérente avec la liste blanche déjà utilisée sur l'API HTTP | L3 |
+| Alignement sur la même liste blanche que `config/cors.ts` | Domaines de l'application et de préproduction uniquement | Cohérente, un seul standard de configuration CORS pour toute la plateforme | L2 |
+
+**Recommandation** : restreindre l'origine du serveur socket.io à la même liste que l'API HTTP (déjà proposé comme US-08 dans le backlog, section 4.6). Ce n'est pas un arbitrage entre deux approches équivalentes, la configuration actuelle est une incohérence par rapport à un standard déjà appliqué ailleurs dans le même projet, pas un choix technique à débattre.
+
+#### 5.3.8 Authentification : jetons d'accès AdonisJS plutôt que JWT ou sessions serveur
+
+**Choix en place** : `@adonisjs/auth`, jetons d'accès opaques stockés en base (table `auth_access_tokens`), plutôt que des JWT auto-portants ou des sessions serveur classiques.
+
+| Option | Révocation immédiate d'un accès compromis | Charge portée par le serveur | Donnée exposée si le jeton est intercepté | Niv |
+|---|---|---|---|---|
+| Jetons d'accès en base (retenu) | Immédiate, il suffit de supprimer la ligne correspondante en base | Une vérification en base à chaque requête authentifiée | Le jeton seul ne révèle aucune information sur l'utilisateur | L2 |
+| JWT auto-porté (sans vérification en base) | Impossible avant expiration naturelle du jeton, sauf liste de révocation supplémentaire à maintenir | Aucune vérification en base nécessaire, le jeton se suffit à lui-même | Le contenu du jeton (payload) est lisible par quiconque l'intercepte, sauf chiffrement supplémentaire | L1 |
+| Session serveur classique (cookie + état en mémoire ou Redis) | Immédiate | Un état de session à maintenir et partager si plusieurs instances du serveur tournent en parallèle | Le cookie de session seul ne révèle aucune information | L2 |
+
+**Recommandation** : les jetons d'accès stockés en base sont le choix le plus adapté ici, précisément parce qu'ils permettent une révocation immédiate, un point non négociable pour un compte lié à un enfant en cas de compromission (perte de téléphone d'un parent, par exemple). Un JWT auto-porté aurait été plus léger pour le serveur, mais au prix de ne pas pouvoir couper l'accès d'un jeton volé avant son expiration, sauf à reconstruire une liste de révocation, ce qui revient à recréer la vérification en base que ce choix évite justement.
+
+#### 5.3.9 Upload et diffusion de fichiers : service dédié (`cdn-app-dance`) plutôt qu'un stockage objet cloud
+
+**Choix en place** : un service Express/Multer séparé (`cdn-app-dance`), hébergé en interne, plutôt qu'un service de stockage objet géré (S3, Cloudinary, Google Cloud Storage) ou un stockage intégré directement à `api-dance`.
+
+| Option | Isolation de la surface d'attaque liée à l'upload | Contrôle d'accès natif au service | Coût d'exploitation | Niv |
+|---|---|---|---|---|
+| Service dédié interne (retenu) | Bonne, séparé du reste de la logique métier | Aucun mécanisme d'authentification repéré sur ce service à ce jour (déjà noté en 5.2.5) | Hébergement et maintenance à la charge de VNWeb | L3 |
+| Stockage objet cloud géré (S3 et équivalents) | Bonne, le fournisseur gère l'isolation et le durcissement de la brique de stockage | Contrôle d'accès fin natif (politiques par bucket, URL signées à durée limitée) | Facturation à l'usage, pas d'hébergement à maintenir soi-même | L2 |
+| Stockage intégré à `api-dance` | Faible, une faille sur l'upload s'exécute dans le même processus que le reste de la logique métier et de l'accès à la base de données | Hérite du contrôle d'accès déjà en place sur `api-dance` | Aucun service supplémentaire à héberger | L3 |
+
+**Recommandation** : séparer le service d'upload du reste de l'API reste une bonne décision d'isolation, elle est confirmée par les bonnes pratiques de réduction de surface d'attaque. Mais le choix d'un service interne plutôt qu'un stockage objet cloud managé laisse à la charge de VNWeb la responsabilité de sécuriser lui-même ce service, ce qui n'est pas encore fait puisqu'aucune authentification n'y a été repérée. Un service cloud managé aurait fourni ce contrôle d'accès nativement (URL signées, politiques de bucket), au prix d'une dépendance à un fournisseur tiers et d'une facturation à l'usage. Ce n'est pas un point à trancher immédiatement dans ce document, mais un arbitrage à documenter dans le plan de sécurisation (section 9) : durcir le service actuel, ou migrer vers un stockage géré.
+
+**Sources citées pour ce benchmark** : OWASP Top 10 (catégorie A03:2021, Injection) · OWASP Password Storage Cheat Sheet (Password Hashing Competition, Argon2id/bcrypt/scrypt/PBKDF2) · OWASP ASVS (contrôle d'accès et gestion de session) · Documentation officielle AdonisJS (`config/hash.ts`, `@adonisjs/auth`, `@adonisjs/cors`) · Code source vérifié de ce dépôt (`api-dance/config/*.ts`, `api-dance/app/models/user.ts`, `api-dance/start/ws.ts`).
 
 ---
 
@@ -443,7 +601,7 @@ Cet extrait reprend les objectifs restants déjà identifiés en section 2.3 et 
 
 ### 13.1 Compétences techniques acquises
 
-[à rédiger, en ancrant sur le projet réel : audit et sécurisation de api-dance (AdonisJS, MySQL/Lucid), app-dance (React/Ionic, Firebase) et cdn-app-dance (Express, Multer). S'appuyer sur le travail effectivement mené avec l'agent `@axel` (SAST/DAST, CI/CD) et `@jury-rncp37173` (auto-évaluation bloc par bloc) comme preuve concrète plutôt que sur une généralité.]
+[à rédiger, en ancrant sur le projet réel : audit et sécurisation de api-dance (AdonisJS, MySQL/Lucid), app-dance (React/Ionic) et cdn-app-dance (Express, Multer). S'appuyer sur le travail effectivement mené avec l'agent `@axel` (SAST/DAST, CI/CD) et `@jury-rncp37173` (auto-évaluation bloc par bloc) comme preuve concrète plutôt que sur une généralité.]
 
 ### 13.2 Compétences organisationnelles et transverses
 

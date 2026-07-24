@@ -67,7 +67,7 @@ Précision apportée par l'interview : un « groupe » est l'entité nommée (ex
 
 - Un post peut être rattaché à un groupe (visible par les membres de ce groupe) ou être global (visible par tous, page Accueil).
 - Seule interaction disponible actuellement : le like.
-- Note de code : un modèle et des routes de commentaires existent encore côté backend (`comment_controller.ts`, `routes/comments.ts`, relation `comments` sur le modèle `User`), bien que la fonctionnalité ait été retirée côté interface pour le moment. Le backend reste donc joignable sur ce point même si l'app ne l'utilise plus — à garder en tête pour un futur audit de surface d'attaque.
+- Correction apportée lors du plan d'audit de sécurité (`docs/context/plan_audit.md`, constat 3.8) : contrairement à ce qui était noté ici auparavant, la fonctionnalité de commentaires est bien active des deux côtés. Le backend (`comment_controller.ts`, `routes/comments.ts`) applique une vérification de capacité avant ajout et une vérification de propriété avant suppression, et le frontend affiche réellement les composants de commentaires (`AddComment.tsx`, `CommentPost.tsx`) dans `WallPost.tsx`, utilisé sur la page d'accueil et sur la page de détail d'un groupe.
 
 ## Invitation de superviseur
 
