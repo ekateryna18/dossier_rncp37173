@@ -170,22 +170,22 @@ Les leviers les plus actionnables à court terme sont la valorisation de l'audit
 
 ### 4.1 Besoins fonctionnels
 
-| ID | Besoin fonctionnel | Module |
+| ID | Besoin fonctionnel | Composant concerné |
 |---|---|---|
-| BF-01 | Gestion des comptes et des rôles (admin, professeur, superviseur, élève) | api-dance (auth, admin) |
-| BF-02 | Cycle de validation d'un compte (validation email puis validation admin) | api-dance (auth) |
-| BF-03 | Gestion des enfants par un compte superviseur (création, modification, retrait) | api-dance (users) |
-| BF-04 | Invitation d'un tiers comme superviseur d'un enfant | api-dance (auth) |
-| BF-05 | Gestion des groupes et des cours | api-dance (groups) |
-| BF-06 | Auto-assignation ou retrait d'un groupe (professeur, élève) | api-dance (groups) |
-| BF-07 | Publication de posts (de groupe ou globaux) | api-dance (posts), app-dance |
-| BF-08 | Like sur un post | api-dance (posts) |
-| BF-09 | Messagerie privée en un-à-un | api-dance (chat), app-dance |
-| BF-10 | Notifications push (nouveau post, nouveau message, validation d'email, invitation de superviseur) | api-dance (web push), app-dance |
-| BF-11 | Upload et diffusion des médias (photos de cours, avatars) | cdn-app-dance |
-| BF-12 | Espace admin (utilisateurs, validation des comptes, emails non vérifiés, cours) | api-dance, app-dance |
+| BF-01 | Gestion des comptes et des rôles (admin, professeur, superviseur, élève) | Backend |
+| BF-02 | Cycle de validation d'un compte (validation email puis validation admin) | Backend |
+| BF-03 | Gestion des enfants par un compte superviseur (création, modification, retrait) | Backend |
+| BF-04 | Invitation d'un tiers comme superviseur d'un enfant | Backend |
+| BF-05 | Gestion des groupes et des cours | Backend |
+| BF-06 | Auto-assignation ou retrait d'un groupe (professeur, élève) | Backend |
+| BF-07 | Publication de posts (de groupe ou globaux) | Backend et interface utilisateur |
+| BF-08 | Like sur un post | Backend |
+| BF-09 | Messagerie privée en un-à-un | Backend et interface utilisateur |
+| BF-10 | Notifications push (nouveau post, nouveau message, validation d'email, invitation de superviseur) | Backend et interface utilisateur |
+| BF-11 | Upload et diffusion des médias (photos de cours, avatars) | Service de fichiers dédié |
+| BF-12 | Espace admin (utilisateurs, validation des comptes, emails non vérifiés, cours) | Backend et interface utilisateur |
 
-Ce tableau reflète le périmètre fonctionnel réellement développé et vérifié dans le code, pas un périmètre cible.
+Ce tableau reflète le périmètre fonctionnel réellement développé et utilisé en production, pas un périmètre cible. Le backend, l'interface utilisateur et le service de fichiers dédié sont les trois composants applicatifs présentés en détail à la section 5.1.
 
 ### 4.2 Besoins non-fonctionnels
 
@@ -218,10 +218,10 @@ Solution retenue : une démarche corrective priorisée par criticité (section 6
 Solution retenue : confier la mission de sécurisation à l'alternante en parallèle de sa formation RNCP37173, avec une mise en place progressive d'outils automatisés (analyse statique, audit de dépendances, détection de secrets) plutôt qu'un contrôle manuel récurrent qui ne serait pas soutenable dans le temps.
 
 **P3, comment garantir qu'aucune régression fonctionnelle n'accompagne les corrections de sécurité, alors qu'aucune suite de tests automatisés n'existe sur le projet ?**
-Constat : à ce jour, aucun test automatisé n'a été écrit sur `api-dance`, `app-dance` ou `cdn-app-dance`. La vérification de non-régression repose uniquement sur des essais manuels avant mise en production.
+Constat : à ce jour, aucun test automatisé n'a été écrit sur le backend, l'interface utilisateur ou le service de fichiers. La vérification de non-régression repose uniquement sur des essais manuels avant mise en production.
 Solution retenue : maintenir la validation manuelle ciblée sur le parcours modifié à chaque correction de sécurité, et positionner la construction d'une suite de tests automatisés comme un chantier à part entière du plan de sécurisation (section 9), et non comme un prérequis bloquant les corrections urgentes.
 
-**P4, comment traiter les écarts découverts pendant l'analyse du code (redondance entre `isAdmin` et `status`, absence de vérification du lien superviseur-enfant sur l'invitation d'un tiers, risque d'injection via l'extension de fichier non filtrée dans `cdn-app-dance`) sans bloquer l'avancement du chantier ?**
+**P4, comment traiter les écarts découverts pendant l'analyse du code (deux champs distincts qui représentent tous les deux le statut d'administrateur d'un compte, sans garantie de rester synchronisés entre eux, absence de vérification du lien superviseur-enfant sur l'invitation d'un tiers, risque d'injection de commande via le nom d'un fichier envoyé au service de fichiers) sans bloquer l'avancement du chantier ?**
 Solution retenue : chaque écart est documenté et traité comme point d'audit à part entière (sections 6 et 9), plutôt que corrigé au fil de l'eau sans traçabilité.
 
 ### 4.5 Gestion de projet, WBS et suivi Kanban
@@ -248,11 +248,11 @@ Le code est hébergé sur Gitea. Le suivi des tâches du projet se fait sur l'ex
 | US-02 | En tant que responsable sécurité, je veux auditer le contrôle d'accès sur les endpoints manipulant des données d'enfants supervisés, afin de vérifier qu'un utilisateur ne peut pas accéder aux données d'un enfant qui n'est pas le sien. | Must | À faire |
 | US-03 | En tant que VNWeb, je veux une analyse RGPD dédiée aux données des mineurs, afin de documenter la base légale de leur traitement. | Must | À faire |
 | US-04 | En tant qu'admin, je veux que l'auto-assignation aux groupes soit clarifiée, afin d'éviter qu'un élève rejoigne un groupe qui ne le concerne pas sans aucun contrôle. | Should | À faire |
-| US-05 | En tant que responsable sécurité, je veux que l'extension d'un fichier uploadé soit filtrée par liste blanche avant d'être utilisée dans une commande exécutée sur le serveur (`cdn-app-dance`), afin d'empêcher une injection de commande via un nom de fichier construit à cet effet. | Must | À faire |
-| US-06 | En tant que développeuse, je veux résoudre la redondance entre `isAdmin` et `status` pour l'adminship, afin d'éviter une incohérence exploitable dans les contrôles d'accès. | Could | À faire |
+| US-05 | En tant que responsable sécurité, je veux que l'extension d'un fichier envoyé au service de fichiers soit filtrée par liste blanche avant d'être utilisée dans un traitement exécuté sur le serveur (conversion ou compression de médias), afin d'empêcher une injection de commande via un nom de fichier construit à cet effet. | Must | À faire |
+| US-06 | En tant que développeuse, je veux unifier les deux champs distincts qui représentent aujourd'hui le statut d'administrateur d'un compte, afin d'éviter une incohérence exploitable dans les contrôles d'accès. | Could | À faire |
 | US-07 | En tant que responsable sécurité, je veux qu'une invitation de superviseur ne puisse être envoyée que par un utilisateur déjà superviseur de l'enfant concerné, afin qu'un professeur ou un superviseur d'un autre enfant ne puisse pas donner accès aux données d'un mineur qui ne le concerne pas. | Must | À faire |
-| US-08 | En tant que responsable sécurité, je veux restreindre l'origine autorisée sur le serveur socket.io (actuellement `origin: '*'`) à des domaines connus, afin qu'un site tiers ne puisse pas se connecter au canal de messagerie privée. | Must | À faire |
-| US-09 | En tant que développeuse, je veux retirer le code mort issu du gabarit AdonisJS Transmit (`ChannelsController`), afin de réduire la surface d'attaque et la charge de maintenance à du code réellement actif. | Could | À faire |
+| US-08 | En tant que responsable sécurité, je veux restreindre les origines autorisées à se connecter au canal de messagerie en temps réel, actuellement ouvert à n'importe quel site, à une liste de domaines connus, afin qu'un site tiers ne puisse pas s'y connecter. | Must | À faire |
+| US-09 | En tant que développeuse, je veux retirer le code de démonstration hérité de l'outil de diffusion en temps réel qui n'a finalement pas été retenu pour la messagerie, afin de réduire la surface d'attaque et la charge de maintenance à du code réellement actif. | Could | À faire |
 
 Cet extrait reprend les objectifs restants déjà identifiés en section 2.3, les écarts relevés dans l'analyse du code de la section 4.4, et les constats faits lors de la rédaction de l'architecture (section 5), reformulés en user stories.
 
@@ -285,10 +285,10 @@ L'application est découpée en trois sous-projets indépendants, chacun avec sa
 | `app-dance` | Client web installable (PWA) | React 19, Ionic React, Vite | Consomme l'API REST et le temps réel de `api-dance` ; dépose et récupère les fichiers via `cdn-app-dance` |
 | `api-dance` | Backend métier, source de vérité des données | AdonisJS 6, Lucid, MySQL | Expose l'API REST, le temps réel (Server-Sent Events via Transmit, WebSocket via socket.io), gère l'authentification et l'envoi des notifications push |
 | `cdn-app-dance` | Service dédié au dépôt et à la diffusion de fichiers | Express 5, Multer | Reçoit les fichiers uploadés (photos de cours, avatars) et les sert ensuite en lecture |
-| Base de données | Persistance, 17 tables (voir le schéma détaillé) | MySQL, accédée uniquement par `api-dance` via l'ORM Lucid | Stocke comptes, rôles, groupes, posts, messages, tokens, abonnements aux notifications |
-| web-push | Notifications navigateur | `web-push` côté `api-dance` | Envoie les notifications push aux navigateurs abonnés (table `subscriptions`) |
+| Base de données | Persistance de l'ensemble des données de l'application | MySQL, accédée uniquement par le backend | Stocke comptes, rôles, groupes, posts, messages, jetons de connexion, abonnements aux notifications |
+| Service de notifications navigateur | Notifications push | Géré depuis le backend | Envoie les notifications aux navigateurs des utilisateurs qui y ont consenti |
 
-`cdn-app-dance` est volontairement isolé des deux autres sous-projets : il ne partage ni code ni base de données avec `api-dance`, ce qui limite ce qu'un incident sur ce service pourrait exposer au reste de la plateforme.
+Le service de fichiers est volontairement isolé des deux autres composants : il ne partage ni code ni base de données avec le backend, ce qui limite ce qu'un incident sur ce service pourrait exposer au reste de la plateforme.
 
 ### 5.2 CDCT, Choix Des Composants Technologiques
 
@@ -296,37 +296,37 @@ La stack décrite ci-dessous existait déjà avant le début de ma mission de s�
 
 #### 5.2.1 Framework backend
 
-`api-dance` repose sur AdonisJS 6, un framework Node.js/TypeScript complet plutôt qu'un assemblage de briques indépendantes (type Express seul). Ce choix apporte, de série, plusieurs éléments directement utiles à un projet manipulant des données de mineurs : un ORM intégré (Lucid), un module d'authentification (`@adonisjs/auth`), un module d'autorisation par politiques (`@adonisjs/bouncer`), une validation de schéma stricte (VineJS) et une limitation de débit (`@adonisjs/limiter`). Ces briques viennent du même écosystème et suivent le même cycle de mises à jour, ce qui réduit le risque d'incohérence de version entre des dépendances de sécurité choisies séparément.
+Le backend repose sur AdonisJS 6, un framework Node.js/TypeScript complet plutôt qu'un assemblage de briques indépendantes (type Express seul). Ce choix apporte, de série, plusieurs éléments directement utiles à un projet manipulant des données de mineurs : un ORM intégré (Lucid), un module d'authentification natif, un module d'autorisation par politiques d'accès, une validation stricte des données entrantes et un mécanisme de limitation du nombre de requêtes. Ces briques viennent du même écosystème et suivent le même cycle de mises à jour, ce qui réduit le risque d'incohérence de version entre des dépendances de sécurité choisies séparément.
 
 #### 5.2.2 Base de données et ORM
 
-Le choix de MySQL, accédé via l'ORM Lucid, correspond à un domaine fortement relationnel : comptes liés à des rôles, superviseurs liés à des enfants, utilisateurs liés à des groupes, posts liés à des médias et des likes. Les clés étrangères avec suppression en cascade, présentes sur la quasi-totalité des tables, garantissent qu'un enfant supprimé n'y laisse pas de données orphelines. Les migrations Lucid, versionnées et horodatées, donnent un historique exact et auditable du schéma, c'est d'ailleurs à partir de ces 42 fichiers de migration que le schéma de données de ce dossier a été reconstitué. Une configuration Postgres existe dans le code (`config/database.ts`) mais elle est désactivée, seule la connexion MySQL est active.
+Le choix de MySQL, accédé via l'ORM Lucid, correspond à un domaine fortement relationnel : comptes liés à des rôles, superviseurs liés à des enfants, utilisateurs liés à des groupes, posts liés à des médias et des likes. Les suppressions en cascade, présentes sur la quasi-totalité des relations, garantissent qu'un enfant supprimé n'y laisse pas de données orphelines ailleurs dans la base. L'historique des évolutions du schéma est versionné et horodaté, ce qui a permis de reconstituer avec exactitude le schéma de données de ce dossier à partir de 42 étapes d'évolution successives de la base. Une configuration pour une autre base de données (PostgreSQL) existe dans le code mais elle est désactivée : seule la connexion MySQL est active en pratique.
 
 #### 5.2.3 Framework frontend
 
-`app-dance` utilise React 19 avec Ionic React plutôt qu'un développement natif séparé pour mobile et web. Ionic apporte des composants d'interface proches d'une application mobile native tout en restant une PWA installable depuis le navigateur, un choix cohérent avec le fait que l'application doit être utilisée aussi bien par des parents que par des professeurs sur des appareils variés, sans passer par un store d'application. Vite assure un temps de build et de rechargement à chaud réduit par rapport à des outils plus anciens (Webpack), ce qui compte pour la vitesse d'itération d'une équipe de deux développeurs.
+L'interface utilisateur utilise React 19 avec Ionic React plutôt qu'un développement natif séparé pour mobile et web. Ionic apporte des composants d'interface proches d'une application mobile native tout en restant une PWA installable depuis le navigateur, un choix cohérent avec le fait que l'application doit être utilisée aussi bien par des parents que par des professeurs sur des appareils variés, sans passer par un store d'application. L'outil de développement utilisé (Vite) assure un temps de build et de rechargement à chaud réduit par rapport à des outils plus anciens, ce qui compte pour la vitesse d'itération d'une équipe de deux développeurs.
 
 #### 5.2.4 Service d'authentification / services tiers
 
-L'authentification principale repose sur `@adonisjs/auth`, avec des jetons d'accès stockés côté `api-dance` (table `auth_access_tokens`). Aucun service d'authentification tiers n'est réellement utilisé par l'application : l'intégralité du cycle de connexion, de validation de compte et de gestion des jetons est portée par `api-dance`.
+L'authentification principale repose sur le module d'authentification natif du framework backend, avec des jetons d'accès stockés côté serveur, dans une table dédiée de la base de données. Aucun service d'authentification tiers n'est réellement utilisé par l'application : l'intégralité du cycle de connexion, de validation de compte et de gestion des jetons est portée par le backend lui-même.
 
 #### 5.2.5 Service de stockage et diffusion de fichiers
 
-`cdn-app-dance` est un service Express séparé, dédié à la réception (Multer) et à la diffusion des fichiers, plutôt qu'un stockage intégré directement à `api-dance`. Séparer ce service isole la surface d'attaque propre à la réception de fichiers (validation de type, de taille, chemin de stockage) du reste de la logique métier : une faille sur l'upload ne donne pas un accès direct à la base de données ou aux jetons d'authentification, qui restent uniquement du ressort de `api-dance`. Ce choix a cependant un revers déjà identifié : aucun mécanisme d'authentification n'a été repéré sur ce service, un point qui devra être traité en priorité lors de l'audit (section 6).
+Le service de fichiers est un service séparé, dédié à la réception et à la diffusion des fichiers, plutôt qu'un stockage intégré directement au backend. Séparer ce service isole la surface d'attaque propre à la réception de fichiers (validation de type, de taille, chemin de stockage) du reste de la logique métier : une faille sur l'envoi de fichiers ne donne pas un accès direct à la base de données ou aux jetons d'authentification, qui restent uniquement du ressort du backend. Ce choix a cependant un revers déjà identifié : aucun mécanisme d'authentification n'a été repéré sur ce service, un point qui devra être traité en priorité lors de l'audit (section 6).
 
-#### 5.2.6 Coexistence de deux mécanismes temps réel (Transmit et socket.io)
+#### 5.2.6 Coexistence de deux mécanismes temps réel
 
-Le backend déclare à la fois `@adonisjs/transmit` (Server-Sent Events) et `socket.io`. La lecture du code montre que seul `socket.io` est réellement utilisé : il porte la messagerie privée 1-à-1 (indicateur de saisie, envoi de message, marquage comme lu), câblé dans `start/ws.ts` et consommé côté client par `app-dance`. Transmit est installé, son fournisseur est enregistré et sa configuration existe (`config/transmit.ts`), mais son seul point d'usage dans le code (`ChannelsController.join`, un exemple de canal de démonstration) n'est relié à aucune route : c'est du code mort, un reliquat du gabarit de démarrage d'AdonisJS Transmit, pas une fonctionnalité active.
+Le backend déclare deux mécanismes de communication en temps réel distincts, hérités de deux approches différentes disponibles dans son écosystème. La lecture du code montre qu'un seul des deux est réellement utilisé : il porte la messagerie privée en un-à-un (indicateur de saisie, envoi de message, marquage comme lu), et c'est celui-là que consomme l'interface utilisateur. Le second est installé et configuré, mais son seul point d'usage dans le code est un exemple de canal de démonstration qui n'est relié à aucune route accessible de l'application : c'est du code mort, un reliquat du gabarit de démarrage fourni par cet outil, pas une fonctionnalité active.
 
-En creusant ce point, un autre constat mérite d'être noté ici : le serveur socket.io est configuré avec `cors: { origin: '*' }` (`start/ws.ts`), une autorisation ouverte à n'importe quelle origine. Sur un canal qui transporte des messages privés, c'est un point à vérifier en priorité lors de l'audit (section 6).
+En creusant ce point, un autre constat mérite d'être noté ici : le canal temps réel réellement utilisé pour la messagerie est configuré pour accepter des connexions depuis n'importe quelle origine, une autorisation ouverte plutôt que restreinte à une liste de domaines connus. Sur un canal qui transporte des messages privés, c'est un point à vérifier en priorité lors de l'audit (section 6).
 
 ### 5.3 Benchmark détaillé des choix technologiques
 
-Cette section compare, choix par choix, la technologie réellement utilisée dans `api-dance` / `app-dance` / `cdn-app-dance` avec des alternatives sérieuses du marché, et motive pourquoi le choix en place tient ou ne tient pas face à ces alternatives. Chaque constat de configuration cité est vérifié dans le code, pas supposé. Niveau de preuve indiqué par choix (`Niv`) : L1, spécification officielle ou standard reconnu (RFC, OWASP ASVS) ; L2, documentation produit officielle ou recommandation d'un organisme de référence (OWASP Cheat Sheet Series) ; L3, consensus technique large sans texte normatif unique.
+Cette section compare, choix par choix, la technologie réellement utilisée dans les trois composants applicatifs (backend, interface utilisateur, service de fichiers) avec des alternatives sérieuses du marché, et motive pourquoi le choix en place tient ou ne tient pas face à ces alternatives. Chaque constat cité a été vérifié directement dans le code au moment de la rédaction, pas supposé. Niveau de preuve indiqué par choix (`Niv`) : L1, spécification officielle ou standard reconnu ; L2, documentation produit officielle ou recommandation d'un organisme de référence reconnu en sécurité (l'OWASP, Open Web Application Security Project, fondation de référence en sécurité applicative) ; L3, consensus technique large sans texte normatif unique.
 
 #### 5.3.1 Framework backend : AdonisJS
 
-**Choix en place** : AdonisJS 6, TypeScript, avec ORM (Lucid), authentification (`@adonisjs/auth`), autorisation (`@adonisjs/bouncer`), validation (VineJS) et limitation de débit (`@adonisjs/limiter`) intégrés au même framework.
+**Choix en place** : AdonisJS 6, un framework backend complet en TypeScript, avec un ORM intégré (Lucid), un module d'authentification natif, un module d'autorisation par politiques d'accès, une validation stricte des données entrantes et une limitation du nombre de requêtes, tous intégrés au même framework.
 
 | Option | Modules de sécurité intégrés | Maturité de l'écosystème Node | Courbe d'apprentissage pour une équipe TypeScript | Niv |
 |---|---|---|---|---|
@@ -339,7 +339,7 @@ Cette section compare, choix par choix, la technologie réellement utilisée dan
 
 #### 5.3.2 ORM et accès aux données : Lucid
 
-**Choix en place** : Lucid (ORM natif d'AdonisJS), requêtes construites via le query builder plutôt qu'en SQL brut concaténé, migrations versionnées dans `database/migrations`.
+**Choix en place** : Lucid, l'ORM natif d'AdonisJS, avec des requêtes construites via un générateur de requêtes structuré plutôt qu'en SQL brut concaténé à la main, et un historique versionné des évolutions du schéma de la base.
 
 | Option | Protection native contre l'injection SQL | Historique de schéma auditable | Coût de flexibilité (requêtes complexes) | Niv |
 |---|---|---|---|---|
@@ -352,19 +352,19 @@ Cette section compare, choix par choix, la technologie réellement utilisée dan
 
 #### 5.3.3 Base de données : MySQL
 
-**Choix en place** : MySQL, via le pilote `mysql2`, configuré dans `config/database.ts`. Une configuration PostgreSQL existe dans le même fichier mais reste désactivée.
+**Choix en place** : MySQL est la base de données réellement connectée en production. Une configuration pour une autre base de données (PostgreSQL) existe dans le code mais reste désactivée.
 
-| Option | Adéquation au modèle relationnel du projet | Coût opérationnel pour une équipe de projet de 3 personnes | Support des contraintes d'intégrité (clés étrangères en cascade) | Niv |
+| Option | Adéquation au modèle relationnel du projet | Coût opérationnel pour une équipe de projet de 3 personnes | Support des contraintes d'intégrité (suppression en cascade) | Niv |
 |---|---|---|---|---|
-| MySQL (retenu) | Fort : comptes, groupes, superviseurs et posts sont fortement relationnels avec des clés étrangères en cascade | Faible, hébergement et outillage largement répandus | Complet, déjà utilisé sur les 17 tables du schéma actuel | L2 |
-| PostgreSQL | Fort, équivalent à MySQL sur ce type de modèle, avec en plus des types avancés (JSONB indexé, contraintes `CHECK` plus riches) | Comparable à MySQL | Complet | L2 |
+| MySQL (retenu) | Fort : comptes, groupes, superviseurs et posts sont fortement relationnels avec des suppressions en cascade | Faible, hébergement et outillage largement répandus | Complet, déjà utilisé sur l'ensemble des tables du schéma actuel | L2 |
+| PostgreSQL | Fort, équivalent à MySQL sur ce type de modèle, avec en plus des types de données avancés et des règles de validation plus riches au niveau de la base | Comparable à MySQL | Complet | L2 |
 | MongoDB (document) | Faible : le modèle actuel repose sur des relations many-to-many strictes (superviseurs/enfants, utilisateurs/groupes), qui demanderaient une dénormalisation manuelle en base documentaire | Comparable | Pas de clé étrangère native, l'intégrité référentielle serait à recoder côté application | L3 |
 
 **Recommandation** : MySQL est un choix cohérent pour ce modèle de données, mais pas parce qu'il serait supérieur à PostgreSQL dans l'absolu : les deux conviennent également bien à un schéma aussi relationnel. Le point qui mérite d'être tranché n'est pas MySQL contre PostgreSQL, c'est la configuration PostgreSQL laissée présente mais désactivée dans le code : soit elle documente une migration envisagée à retirer proprement si elle n'est plus d'actualité, soit elle doit rester à jour si une bascule reste possible. MongoDB, en revanche, n'aurait pas été un bon choix ici : le modèle de données du projet est relationnel par nature, pas documentaire.
 
 #### 5.3.4 Forme de l'application côté client : PWA (React + Ionic) et impact sécurité
 
-**Choix en place** : `app-dance` est une PWA (Progressive Web App) installable, construite avec React 19 et Ionic React, plutôt qu'une application native ou un développement natif séparé par plateforme.
+**Choix en place** : l'interface utilisateur est une PWA (Progressive Web App) installable, construite avec React 19 et Ionic React, plutôt qu'une application native ou un développement natif séparé par plateforme.
 
 | Option | Distribution | Surface d'attaque spécifique | Contrôle de l'éditeur sur les mises à jour de sécurité | Niv |
 |---|---|---|---|---|
@@ -376,14 +376,7 @@ Cette section compare, choix par choix, la technologie réellement utilisée dan
 
 #### 5.3.5 Hachage des mots de passe : scrypt
 
-**Choix en place, vérifié dans `config/hash.ts`** :
-
-```
-default: 'scrypt'
-scrypt: { cost: 16384, blockSize: 8, parallelization: 1, maxMemory: 33554432 }
-```
-
-Ce sont les paramètres par défaut fournis par AdonisJS pour le pilote scrypt, non retouchés pour ce projet.
+**Choix en place** : les mots de passe sont hachés avec l'algorithme scrypt, configuré avec les paramètres fournis par défaut par le framework (un coût de calcul et une empreinte mémoire définis par défaut), non retouchés pour ce projet précis.
 
 | Option | Résistance au calcul massivement parallèle (GPU/ASIC) | Recommandation OWASP (Password Storage Cheat Sheet) | Statut sur ce projet | Niv |
 |---|---|---|---|---|
@@ -392,11 +385,11 @@ Ce sont les paramètres par défaut fournis par AdonisJS pour le pilote scrypt, 
 | bcrypt | Bonne, mais coût uniquement en temps CPU, pas en mémoire, donc plus sensible à l'accélération GPU qu'un algorithme à coût mémoire | Deuxième choix recommandé par OWASP, si Argon2id n'est pas disponible | Non utilisé sur ce projet | L2 |
 | PBKDF2 | Plus faible que les trois précédents, coût purement CPU, sans composante mémoire | Dernier choix recommandé par OWASP, à réserver aux environnements contraints (ex. certification FIPS) | Non utilisé sur ce projet | L2 |
 
-**Recommandation** : scrypt n'est pas un mauvais choix, il figure dans la liste des algorithmes acceptés par OWASP pour le stockage de mots de passe, et il est nettement préférable à un simple hachage rapide (MD5, SHA-256 seul, sans dérivation de clé lente). Mais deux points méritent d'être remontés dans l'audit de sécurité (section 6) plutôt que d'être laissés tels quels : d'une part, Argon2id est la recommandation de premier rang d'OWASP et n'a pas été retenu ici sans qu'une raison documentée n'explique ce choix ; d'autre part, les paramètres actuels (`cost: 16384`, `maxMemory: 32 Mo`) sont ceux fournis par défaut par AdonisJS, pas des valeurs choisies après une analyse du contexte de menace de ce projet précis. Un paramètre de coût non revu n'est pas nécessairement insuffisant, mais il n'a pas non plus été validé comme suffisant.
+**Recommandation** : scrypt n'est pas un mauvais choix, il figure dans la liste des algorithmes acceptés par l'OWASP pour le stockage de mots de passe, et il est nettement préférable à un simple hachage rapide sans dérivation de clé lente. Mais deux points méritent d'être remontés dans l'audit de sécurité (section 6) plutôt que d'être laissés tels quels : d'une part, Argon2id est la recommandation de premier rang de l'OWASP et n'a pas été retenu ici sans qu'une raison documentée n'explique ce choix ; d'autre part, les paramètres actuels sont ceux fournis par défaut par le framework, pas des valeurs choisies après une analyse du contexte de menace de ce projet précis. Un paramètre de coût non revu n'est pas nécessairement insuffisant, mais il n'a pas non plus été validé comme suffisant.
 
 #### 5.3.6 Stockage des données sensibles hors mot de passe
 
-**Constat vérifié dans le code** : la clé `APP_KEY` existe (`config/app.ts`), utilisée par le framework pour le chiffrement des cookies et la signature d'URL, mais aucun usage du module de chiffrement d'AdonisJS n'a été trouvé dans `app/` pour chiffrer une colonne applicative. Les colonnes contenant des données personnelles des mineurs (`birth_date`, `phone_number`, `address`, `postal_code`, `city`, `first_name`, `last_name`) sont stockées en clair dans la table `users`, protégées uniquement par le contrôle d'accès applicatif et par la sécurité de la base de données elle-même.
+**Constat vérifié dans le code** : une clé de chiffrement applicative existe déjà, utilisée par le framework pour le chiffrement des cookies et la signature d'URLs, mais aucun usage de cette clé n'a été trouvé pour chiffrer une donnée personnelle stockée en base. Les champs contenant des données personnelles des mineurs (date de naissance, téléphone, adresse, code postal, ville, nom, prénom) sont stockés en clair dans la table des comptes utilisateurs, protégés uniquement par le contrôle d'accès applicatif et par la sécurité de la base de données elle-même.
 
 | Option | Protection si la base de données est copiée ou compromise directement | Complexité d'implémentation | Impact sur les requêtes (recherche, tri) | Niv |
 |---|---|---|---|---|
@@ -406,20 +399,20 @@ Ce sont les paramètres par défaut fournis par AdonisJS pour le pilote scrypt, 
 
 **Recommandation** : le chiffrement au niveau champ n'est pas systématiquement le bon choix pour toutes les colonnes, il ajoute de la complexité et casse la recherche native. Mais pour ce projet précis, où les données concernent en majorité des mineurs, il mérite d'être évalué au moins sur les colonnes les plus sensibles (date de naissance, adresse), en complément du chiffrement de disque qui protège un scénario différent (vol du support physique) et ne dispense pas d'un chiffrement applicatif si l'objectif est de résister aussi à une fuite d'identifiants de connexion à la base. Ce point est à traiter dans le plan de sécurisation (section 9), pas comme une correction immédiate isolée : il a un impact sur le modèle de données et sur les requêtes existantes.
 
-#### 5.3.7 Communication en temps réel : socket.io retenu face à Transmit
+#### 5.3.7 Communication en temps réel : le canal retenu pour la messagerie
 
-**Constat déjà établi en 5.2.6** : socket.io est le seul canal temps réel réellement utilisé (messagerie privée), Transmit est installé mais son seul point d'usage n'est relié à aucune route. Point supplémentaire vérifié ici : le serveur socket.io est configuré avec `cors: { origin: '*' }` (`start/ws.ts`), alors que l'API HTTP principale, elle, restreint ses origines à une liste explicite (`config/cors.ts` : domaines de l'application et de préproduction uniquement). Le cadre de sécurité existe donc dans ce projet, il n'a simplement pas été appliqué de façon uniforme sur le canal temps réel.
+**Constat déjà établi en 5.2.6** : un seul des deux mécanismes temps réel installés est réellement utilisé pour la messagerie privée, l'autre n'est relié à aucune route accessible. Point supplémentaire vérifié ici : le canal réellement utilisé pour la messagerie accepte des connexions depuis n'importe quelle origine, alors que l'API HTTP principale, elle, restreint ses origines à une liste explicite de domaines connus. Le cadre de sécurité existe donc dans ce projet, il n'a simplement pas été appliqué de façon uniforme sur le canal temps réel.
 
-| Option | Origine autorisée | Cohérence avec la politique CORS déjà en place sur l'API HTTP | Niv |
+| Option | Origine autorisée | Cohérence avec la politique déjà en place sur l'API HTTP | Niv |
 |---|---|---|---|
-| Configuration actuelle du canal socket.io | `*`, n'importe quelle origine | Incohérente avec la liste blanche déjà utilisée sur l'API HTTP | L3 |
-| Alignement sur la même liste blanche que `config/cors.ts` | Domaines de l'application et de préproduction uniquement | Cohérente, un seul standard de configuration CORS pour toute la plateforme | L2 |
+| Configuration actuelle du canal de messagerie | N'importe quelle origine | Incohérente avec la liste de domaines déjà utilisée sur l'API HTTP | L3 |
+| Alignement sur la même liste de domaines que l'API HTTP | Domaines de l'application et de préproduction uniquement | Cohérente, un seul standard de configuration pour toute la plateforme | L2 |
 
-**Recommandation** : restreindre l'origine du serveur socket.io à la même liste que l'API HTTP (déjà proposé comme US-08 dans le backlog, section 4.6). Ce n'est pas un arbitrage entre deux approches équivalentes, la configuration actuelle est une incohérence par rapport à un standard déjà appliqué ailleurs dans le même projet, pas un choix technique à débattre.
+**Recommandation** : restreindre l'origine du canal de messagerie à la même liste que l'API HTTP (déjà proposé comme US-08 dans le backlog, section 4.6). Ce n'est pas un arbitrage entre deux approches équivalentes, la configuration actuelle est une incohérence par rapport à un standard déjà appliqué ailleurs dans le même projet, pas un choix technique à débattre.
 
-#### 5.3.8 Authentification : jetons d'accès AdonisJS plutôt que JWT ou sessions serveur
+#### 5.3.8 Authentification : jetons d'accès plutôt que JWT ou sessions serveur
 
-**Choix en place** : `@adonisjs/auth`, jetons d'accès opaques stockés en base (table `auth_access_tokens`), plutôt que des JWT auto-portants ou des sessions serveur classiques.
+**Choix en place** : des jetons d'accès opaques stockés côté serveur, dans une table dédiée de la base de données, plutôt que des jetons auto-portants de type JWT ou des sessions serveur classiques.
 
 | Option | Révocation immédiate d'un accès compromis | Charge portée par le serveur | Donnée exposée si le jeton est intercepté | Niv |
 |---|---|---|---|---|
@@ -429,19 +422,19 @@ Ce sont les paramètres par défaut fournis par AdonisJS pour le pilote scrypt, 
 
 **Recommandation** : les jetons d'accès stockés en base sont le choix le plus adapté ici, précisément parce qu'ils permettent une révocation immédiate, un point non négociable pour un compte lié à un enfant en cas de compromission (perte de téléphone d'un parent, par exemple). Un JWT auto-porté aurait été plus léger pour le serveur, mais au prix de ne pas pouvoir couper l'accès d'un jeton volé avant son expiration, sauf à reconstruire une liste de révocation, ce qui revient à recréer la vérification en base que ce choix évite justement.
 
-#### 5.3.9 Upload et diffusion de fichiers : service dédié (`cdn-app-dance`) plutôt qu'un stockage objet cloud
+#### 5.3.9 Upload et diffusion de fichiers : service dédié plutôt qu'un stockage objet cloud
 
-**Choix en place** : un service Express/Multer séparé (`cdn-app-dance`), hébergé en interne, plutôt qu'un service de stockage objet géré (S3, Cloudinary, Google Cloud Storage) ou un stockage intégré directement à `api-dance`.
+**Choix en place** : un service séparé, hébergé en interne, dédié à la réception et à la diffusion des fichiers, plutôt qu'un service de stockage objet géré par un fournisseur cloud (par exemple S3, Cloudinary ou Google Cloud Storage) ou un stockage intégré directement au backend.
 
-| Option | Isolation de la surface d'attaque liée à l'upload | Contrôle d'accès natif au service | Coût d'exploitation | Niv |
+| Option | Isolation de la surface d'attaque liée à l'envoi de fichiers | Contrôle d'accès natif au service | Coût d'exploitation | Niv |
 |---|---|---|---|---|
 | Service dédié interne (retenu) | Bonne, séparé du reste de la logique métier | Aucun mécanisme d'authentification repéré sur ce service à ce jour (déjà noté en 5.2.5) | Hébergement et maintenance à la charge de VNWeb | L3 |
-| Stockage objet cloud géré (S3 et équivalents) | Bonne, le fournisseur gère l'isolation et le durcissement de la brique de stockage | Contrôle d'accès fin natif (politiques par bucket, URL signées à durée limitée) | Facturation à l'usage, pas d'hébergement à maintenir soi-même | L2 |
-| Stockage intégré à `api-dance` | Faible, une faille sur l'upload s'exécute dans le même processus que le reste de la logique métier et de l'accès à la base de données | Hérite du contrôle d'accès déjà en place sur `api-dance` | Aucun service supplémentaire à héberger | L3 |
+| Stockage objet cloud géré | Bonne, le fournisseur gère l'isolation et le durcissement de la brique de stockage | Contrôle d'accès fin natif (droits par espace de stockage, liens d'accès à durée limitée) | Facturation à l'usage, pas d'hébergement à maintenir soi-même | L2 |
+| Stockage intégré au backend | Faible, une faille sur l'envoi de fichiers s'exécute dans le même processus que le reste de la logique métier et de l'accès à la base de données | Hérite du contrôle d'accès déjà en place sur le backend | Aucun service supplémentaire à héberger | L3 |
 
-**Recommandation** : séparer le service d'upload du reste de l'API reste une bonne décision d'isolation, elle est confirmée par les bonnes pratiques de réduction de surface d'attaque. Mais le choix d'un service interne plutôt qu'un stockage objet cloud managé laisse à la charge de VNWeb la responsabilité de sécuriser lui-même ce service, ce qui n'est pas encore fait puisqu'aucune authentification n'y a été repérée. Un service cloud managé aurait fourni ce contrôle d'accès nativement (URL signées, politiques de bucket), au prix d'une dépendance à un fournisseur tiers et d'une facturation à l'usage. Ce n'est pas un point à trancher immédiatement dans ce document, mais un arbitrage à documenter dans le plan de sécurisation (section 9) : durcir le service actuel, ou migrer vers un stockage géré.
+**Recommandation** : séparer le service de fichiers du reste de l'API reste une bonne décision d'isolation, elle est confirmée par les bonnes pratiques de réduction de surface d'attaque. Mais le choix d'un service interne plutôt qu'un stockage objet cloud managé laisse à la charge de VNWeb la responsabilité de sécuriser lui-même ce service, ce qui n'est pas encore fait puisqu'aucune authentification n'y a été repérée. Un service cloud managé aurait fourni ce contrôle d'accès nativement, au prix d'une dépendance à un fournisseur tiers et d'une facturation à l'usage. Ce n'est pas un point à trancher immédiatement dans ce document, mais un arbitrage à documenter dans le plan de sécurisation (section 9) : durcir le service actuel, ou migrer vers un stockage géré.
 
-**Sources citées pour ce benchmark** : OWASP Top 10 (catégorie A03:2021, Injection) · OWASP Password Storage Cheat Sheet (Password Hashing Competition, Argon2id/bcrypt/scrypt/PBKDF2) · OWASP ASVS (contrôle d'accès et gestion de session) · Documentation officielle AdonisJS (`config/hash.ts`, `@adonisjs/auth`, `@adonisjs/cors`) · Code source vérifié de ce dépôt (`api-dance/config/*.ts`, `api-dance/app/models/user.ts`, `api-dance/start/ws.ts`).
+**Sources citées pour ce benchmark** : OWASP Top 10 (catégorie A03:2021, Injection), OWASP Password Storage Cheat Sheet, OWASP ASVS (contrôle d'accès et gestion de session), documentation produit officielle du framework backend, et lecture directe du code source de ce dépôt.
 
 ---
 
@@ -449,19 +442,125 @@ Ce sont les paramètres par défaut fournis par AdonisJS pour le pilote scrypt, 
 
 ### 6.1 Périmètre de l'audit
 
-[à rédiger]
+#### 6.1.1 Composants couverts
+
+| Composant | Stack | Rôle | Exposition |
+|---|---|---|---|
+| Backend | AdonisJS 6, ORM Lucid, MySQL | API, authentification, données métier | Publique (API et canal temps réel) |
+| Interface utilisateur | React 19, Ionic, PWA installable | Écrans utilisés par les parents, professeurs et élèves | Client, servi publiquement |
+| Service de fichiers | Express, Multer | Envoi et diffusion de fichiers (photos, vidéos) | Publique, aucune authentification constatée (voir F-06) |
+
+#### 6.1.2 Couches auditées
+
+1. Code applicatif : logique métier, validation des entrées, requêtes vers la base de données, dans les trois composants.
+2. Dépendances tierces : les bibliothèques utilisées par chaque composant (versions figées, vulnérabilités connues).
+3. Secrets et configuration sensible : présence et exclusion du suivi de version des fichiers contenant des secrets, gestion de la clé de chiffrement applicative.
+4. Configuration réseau : autorisations d'origine sur l'API et sur le canal temps réel, en-têtes de sécurité.
+5. Contrôle d'accès : vérification de rôle, vérification de propriété (le lien entre un utilisateur et l'enfant qu'il supervise).
+6. Stockage des données : champs en base, chiffrement ou absence de chiffrement des données personnelles.
+7. Analyse dynamique : reportée à la disponibilité d'un environnement de test.
+
+#### 6.1.3 Priorité aux parcours touchant les mineurs
+
+Le cœur de gravité de cette mission de sécurisation est la protection des données des élèves mineurs (moins de 15 ans), qui n'ont pas de compte propre et sont gérés via le compte de leur parent superviseur. Deux raisons concrètes placent ces parcours en tête de liste, toutes deux vérifiées par lecture directe du code (détail en 6.3) : le lien entre un compte parent et le compte de l'enfant qu'il supervise peut être créé par un tiers qui connaît seulement l'identifiant de l'enfant (F-01), et les champs personnels de ces mineurs (date de naissance, téléphone, adresse, code postal, ville, nom, prénom) sont stockés en clair dans la table des comptes utilisateurs (F-04). Tout ce qui touche à la relation superviseur/enfant, à l'inscription d'un enfant, et au stockage de ses données, passe donc en priorité haute par défaut dans ce plan.
 
 ### 6.2 Méthodologie
 
-[à rédiger]
+Six catégories d'audit, menées dans cet ordre de dépendance logique (une catégorie amont peut invalider un contrôle en aval) :
+
+1. **Analyse statique du code (SAST)** : recherche de vulnérabilités dans le code source sans exécution, sur les trois composants.
+2. **Audit des dépendances** : recherche de vulnérabilités connues sur les bibliothèques figées utilisées par chaque composant.
+3. **Détection de secrets** : recherche de clés, jetons ou mots de passe qui auraient pu être enregistrés par erreur dans l'historique du code, malgré leur exclusion prévue (voir F-13).
+4. **Revue manuelle de configuration** : CORS, gestion de session, validation d'entrée, limitation de débit, en s'appuyant sur la lecture directe des fichiers de configuration.
+5. **Revue de contrôle d'accès** : pour chaque route sensible, vérifier que le contrôle porte sur la propriété de la ressource et pas seulement sur le rôle de l'appelant.
+6. **Analyse dynamique (DAST)** : contre un environnement de test réel, une fois disponible. Un DAST contre rien ne produit rien de valide.
+
+Le référentiel utilisé pour juger la solidité d'un contrôle est l'OWASP ASVS (Application Security Verification Standard), le même référentiel que celui utilisé pour juger la preuve du bloc 3 du RNCP37173, ce qui garde une grille de lecture cohérente entre l'implémentation et l'évaluation. En complément, l'OWASP Top 10:2021 sert de nomenclature courte pour classer chaque constat :
+
+| Finding | Catégorie OWASP Top 10:2021 |
+|---|---|
+| F-01, contrôle d'accès superviseur/enfant | A01, Broken Access Control |
+| F-02, autorisation d'origine ouverte sur le canal de messagerie | A05, Security Misconfiguration |
+| F-03, paramètres de hachage de mot de passe non ajustés | A02, Cryptographic Failures |
+| F-04, données de mineurs en clair | A02, Cryptographic Failures |
+| F-05, code mort issu de l'outil de temps réel non retenu | A05, Security Misconfiguration (surface inutile) |
+| F-06, absence d'authentification sur le service de fichiers | A01, Broken Access Control |
+| F-07, absence de tests et d'automatisation de vérification | Hors nomenclature Top 10, condition de A06 (composants non vérifiés) |
+| F-08, redondance entre deux champs d'administration | A04, Insecure Design |
+| F-09, auto-assignation aux groupes sans validation métier | A01, Broken Access Control |
+| F-10, injection via le nom de fichier non filtré sur le service de fichiers | A03, Injection |
+| F-11, absence de limitation de débit sur la réinitialisation de mot de passe | A07, Identification and Authentication Failures |
+| F-12, absence de protection CSRF explicite | A05, Security Misconfiguration |
+| F-13, exclusion de suivi de version incomplète sur le service de fichiers | A05, Security Misconfiguration |
+
+**Outils par catégorie :**
+
+| Catégorie | Outil retenu | Justification |
+|---|---|---|
+| SAST principal | CodeQL | Analyse de flux de données de bout en bout, pertinent pour tracer le chemin de la donnée de F-10, s'intègre nativement à la plateforme d'hébergement du code. |
+| SAST complémentaire | Semgrep | Règles personnalisables, utile pour cibler des motifs spécifiques aux briques utilisées par ce projet, exécution locale rapide avant chaque envoi de code. |
+| Audit de dépendances | Un outil de veille automatique sur les vulnérabilités connues, plus une vérification bloquante intégrée à la validation continue | Zéro infrastructure à maintenir, alerte automatique sur nouvelle vulnérabilité, cohérent avec les trois composants qui ont chacun leurs propres dépendances. |
+| Détection de secrets | Un scanner de secrets versionné dans le pipeline, en complément du filet natif de la plateforme d'hébergement | Double filet, pertinent vu la lacune constatée en F-13. |
+| Revue de configuration manuelle | Lecture directe et checklist du référentiel OWASP ASVS (chapitres contrôle d'accès, cryptographie du stockage, sécurité des API) | Pas d'outil automatique fiable pour juger si un contrôle d'accès porte sur la bonne propriété métier (F-01) : la lecture humaine reste nécessaire. |
+| DAST | OWASP ZAP | Voir 6.2.2. |
+
+#### 6.2.1 Choix de l'outil SAST
+
+| Option | Intégration à la validation continue | Couverture du langage utilisé | Coût | Niveau de preuve |
+|---|---|---|---|---|
+| CodeQL | Native sur la plateforme d'hébergement de ce dépôt | Analyse de flux de données inter-procédurale | Gratuit sur ce type de dépôt | L2, documentation produit officielle |
+| Semgrep | Intégration tierce, configuration simple | Analyse par motifs, règles communautaires et personnalisées | Gratuit en usage standard | L2, documentation produit officielle |
+| Analyseur de style avec règles de sécurité complémentaires | Déjà présent si l'analyseur de style du projet est actif | Détection de motifs à risque limités, pas d'analyse de flux | Gratuit | L3, consensus technique large, pas un standard formel |
+
+**Recommandation** : CodeQL en outil principal, Semgrep en complément ciblé. CodeQL est le seul des trois à tracer un flux de données de bout en bout, pertinent pour confirmer ou infirmer F-10, et s'intègre sans service tiers. Semgrep comble sa limite principale : des règles rapides à écrire pour des motifs propres à ce dépôt (une requête construite en contournant les protections habituelles de l'ORM, un point d'entrée sans validation des données reçues). L'analyseur de style avec règles de sécurité reste utile en filet local avant chaque envoi de code, mais ne remplace pas une analyse de flux.
+
+#### 6.2.2 Choix de l'outil DAST
+
+| Option | Coût | Automatisable en continu | Couverture attendue sur ce périmètre | Niveau de preuve |
+|---|---|---|---|---|
+| OWASP ZAP | Gratuit | Oui, des intégrations officielles existent pour un scan rapide et pour un scan complet | Bonne sur les échanges HTTP classiques ; ne couvre pas nativement le canal de messagerie en temps réel (F-02) | L2, projet officiel de la fondation OWASP |
+| Nikto | Gratuit | Oui, mais moins maintenu pour les API modernes | Orienté serveur web générique, peu adapté à une API construite pour des échanges de données structurées | L3, consensus technique large, outil plus ancien |
+| Burp Suite (édition communautaire) | Gratuit en usage manuel, payant pour l'automatisation continue | Non automatisable en continu dans l'édition gratuite | Bonne en usage manuel ponctuel, mais pas dans un pipeline continu | L2, documentation produit officielle |
+
+**Recommandation** : OWASP ZAP. C'est le seul des trois à combiner gratuité et automatisation continue réelle, ce qui correspond à la contrainte de ce projet (pas de budget outillage, équipe de projet de trois personnes). Sa limite connue, la non-couverture native du canal de messagerie en temps réel, doit être compensée par un test manuel ciblé sur cette messagerie (F-02).
 
 ### 6.3 Findings identifiés
 
-[à rédiger : F-01, F-02... avec criticité, catégorie OWASP, constat, recommandation, statut]
+Chaque finding ci-dessous a été relu directement dans le code du dépôt avant rédaction de cette section. Une correction méthodologique au passage : un constat provisoire sur la fonctionnalité de commentaires (supposée retirée de l'interface) a été vérifié puis infirmé par une relecture du code réel de l'interface utilisateur : cette fonctionnalité est active des deux côtés, avec des contrôles d'accès en place. Ce n'est donc pas un finding, et la section 2.3 et l'objectif correspondant ont été corrigés en conséquence.
+
+| ID | Criticité | Catégorie OWASP | Constat | Recommandation | Statut |
+|---|---|---|---|---|---|
+| F-01 | Haute | A01 | La fonctionnalité d'invitation d'un tiers comme superviseur d'un enfant vérifie seulement que l'appelant a un rôle autorisé à superviser des enfants en général (professeur, superviseur, élève-superviseur), pas qu'il est déjà superviseur de l'enfant précis désigné dans la demande. | Ajouter une vérification que l'appelant est déjà superviseur de l'enfant ciblé avant d'envoyer une invitation. | À faire |
+| F-02 | Haute | A05 | Le canal de messagerie en temps réel accepte des connexions depuis n'importe quelle origine, alors que l'API HTTP principale restreint bien les siennes à une liste explicite de domaines connus. Le canal qui porte la messagerie privée accepte donc des connexions que l'API HTTP refuserait. | Aligner la configuration d'origine du canal de messagerie sur la même liste que l'API HTTP. | À faire |
+| F-03 | Moyenne | A02 | Le hachage des mots de passe utilise l'algorithme scrypt avec les paramètres fournis par défaut par le framework, non ajustés au contexte du projet. Argon2id, premier choix recommandé par l'OWASP pour le hachage de mots de passe, n'est pas utilisé. | Revoir les paramètres de hachage après mesure de la capacité du serveur, ou migrer vers Argon2id. | À faire |
+| F-04 | Haute | A02 | Les champs personnels des mineurs (date de naissance, téléphone, adresse, code postal, ville, nom, prénom) sont stockés en clair dans la table des comptes utilisateurs. Une clé de chiffrement applicative existe déjà mais n'est pas utilisée pour chiffrer ces champs. | Évaluer un chiffrement au niveau champ sur les données les plus sensibles, avec la clé applicative déjà disponible. | À faire |
+| F-05 | Basse | A05 | Le contrôleur de démonstration hérité de l'outil de temps réel qui n'a finalement pas été retenu pour la messagerie n'est relié à aucune route accessible de l'application : code mort, reliquat du gabarit de démarrage de cet outil. | Retirer ce contrôleur et sa configuration associée si aucun usage n'est prévu. | À faire |
+| F-06 | Haute | A01 | Le service de fichiers ne comporte aucune vérification d'identité, aucun jeton, aucune session sur les fonctions d'envoi et de nettoyage de médias. Un contrôle par origine et adresse réseau existait mais est entièrement désactivé dans le code. La taille de fichier acceptée est en outre très large (plusieurs giga-octets par fichier). | Mettre en place une authentification minimale (un jeton partagé entre les services internes) sur ce service, en priorité sur les fonctions d'envoi de fichiers. | À faire |
+| F-07 | Haute | Condition de A06 | Aucun test automatisé n'a été trouvé sur les trois composants, et aucune automatisation de vérification n'est configurée. | Mettre en place une validation continue minimale (vérification de style, de types, des dépendances, et analyse statique). | À faire |
+| F-08 | Moyenne | A04 | Deux champs distincts du compte utilisateur portent chacun une notion d'administration, sans mécanisme garantissant qu'ils restent synchronisés entre eux. Le contrôle d'accès administrateur ne s'appuie que sur l'un des deux, ce qui limite le risque immédiat, mais la double source de vérité complique toute revue de droits future. | Choisir une source de vérité unique pour le statut administrateur et migrer l'autre champ. | À faire |
+| F-09 | Basse à moyenne | A01 | Tout utilisateur authentifié peut s'attacher lui-même à n'importe quel groupe existant, sans vérification de son rôle ni d'une règle métier d'éligibilité au groupe ciblé. | Trancher avec l'équipe produit si c'est un choix fonctionnel à documenter ou un défaut à corriger. | À trancher |
+| F-10 | Haute | A03 | Lors de l'envoi d'un fichier au service de fichiers, l'extension du fichier n'est pas filtrée par une liste blanche avant d'être utilisée dans un traitement de conversion ou de compression exécuté directement sur le serveur. Un nom de fichier construit à cet effet pourrait atteindre ce traitement sans être filtré. | Confirmer par un test dédié, puis filtrer l'extension par liste blanche avant tout traitement de ce type. | À faire, priorité immédiate |
+| F-11 | Moyenne | A07 | Aucune limitation du nombre de tentatives n'a été trouvée sur la fonctionnalité de réinitialisation de mot de passe, contrairement à la fonctionnalité de connexion qui en dispose déjà. | Ajouter une limitation de débit sur la fonctionnalité d'envoi du lien de réinitialisation. | À faire |
+| F-12 | Basse | A05 | Aucune protection explicite contre la falsification de requête intersite (CSRF) n'est activée. L'authentification par jeton plutôt que par session réduit la surface d'exposition classique à ce type d'attaque, mais un cookie HTTP est tout de même configuré, dont l'usage réel reste à vérifier. | Confirmer l'usage réel de ce cookie, puis statuer sur le besoin d'une protection CSRF explicite. | À vérifier |
+| F-13 | Basse | A05 | Le fichier qui définit les éléments exclus du suivi de version pour le service de fichiers n'exclut pas les fichiers de configuration contenant des secrets, contrairement aux deux autres composants. Aucune fuite actuelle n'a été constatée. | Corriger cette exclusion avant tout ajout futur de secret dans ce composant. | À faire |
 
 ### 6.4 Synthèse et priorisation
 
-[à rédiger]
+Ordre de priorité retenu, du plus urgent au moins urgent :
+
+1. Corriger le contrôle d'accès sur l'invitation de superviseur (F-01) : correctif le plus direct sur la protection des mineurs.
+2. Confirmer le risque d'injection sur le service de fichiers (F-10) par un test dédié, puis filtrer l'extension par liste blanche avant tout traitement à risque.
+3. Mettre en place une authentification minimale sur le service de fichiers (F-06), en priorité sur les fonctions d'envoi.
+4. Aligner la configuration d'origine du canal de messagerie sur celle de l'API HTTP (F-02).
+5. Évaluer le chiffrement au niveau champ des données personnelles des mineurs (F-04), avec la clé applicative déjà disponible.
+6. Mettre en place une validation continue minimale (F-07), condition de fiabilité de tous les correctifs suivants.
+7. Ajouter la détection de secrets à la validation continue et corriger l'exclusion de suivi de version du service de fichiers (F-13).
+8. Ajouter une limitation de débit sur la réinitialisation de mot de passe (F-11).
+9. Revoir les paramètres de hachage des mots de passe ou migrer vers Argon2id (F-03), après mesure de la capacité réelle du serveur de production.
+10. Trancher avec l'équipe produit le statut de F-09 (auto-assignation aux groupes).
+11. Nettoyer le code mort (F-05) et clarifier la redondance entre les deux champs d'administration (F-08).
+12. Confirmer l'usage réel du cookie HTTP et statuer sur le besoin d'une protection CSRF explicite (F-12).
+13. Une fois un environnement de test disponible, lancer le premier scan de sécurité dynamique contre le backend, puis un test manuel ciblé sur le canal de messagerie (F-02).
 
 ---
 
