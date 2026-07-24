@@ -2,7 +2,7 @@
 
 ## Experte en Sécurité des Développements Informatiques, Niveau 7
 
-**Candidate :** Ecaterina Munteanu **École :** AcadéNice, Nice **Année :** [à préciser] **Projet :** Centre Art & Danse - [une ligne de description à préciser]
+**Candidate :** Ecaterina Munteanu **École :** AcadéNice, Nice **Année :** [à préciser] **Projet :** Centre Art & Danse : Sécurisation d'une application interne de gestion d'école de danse, déjà en production
 
 ---
 
@@ -47,9 +47,9 @@ Mes missions principales chez VNWeb :
 - Intégration et configuration de services tiers selon les projets (authentification, stockage de fichiers, envoi d'emails transactionnels)
 - Application rigoureuse des conventions de codage et des bonnes pratiques de développement définies en interne
 
-Mon rôle chez VNWeb consiste à implémenter les fonctionnalités demandées par le dirigeant, dans le respect des conventions internes. C'est dans ce cadre opérationnel que j'applique concrètement les notions de sécurité étudiées en formation : validation des entrées, contrôle des accès, bonnes pratiques de codage.
+Parmi les projets de l'agence, celui qui structure le présent dossier est Centre Art & Danse : une application interne de gestion d'école de danse, composée d'un backend (`api-dance`), d'une application cliente (`app-dance`) et d'un service dédié à l'upload de fichiers (`cdn-app-dance`), déjà en production au moment où j'en ai pris en charge la dimension sécurité.
 
-[Note de révision : ce paragraphe (dates d'intégration, montée en charge sur la dimension sécurité) est repris d'une version antérieure du dossier et doit être révisé pour correspondre précisément au calendrier réel du projet Centre Art & Danse avant la version finale.]
+Mon rôle chez VNWeb consiste à implémenter les fonctionnalités demandées par le dirigeant, dans le respect des conventions internes. C'est dans ce cadre opérationnel que j'applique concrètement les notions de sécurité étudiées en formation : validation des entrées, contrôle des accès, bonnes pratiques de codage.
 
 ---
 
@@ -57,17 +57,49 @@ Mon rôle chez VNWeb consiste à implémenter les fonctionnalités demandées pa
 
 ### 2.1 Contexte général
 
-[à rédiger]
+Centre Art & Danse est une application interne développée par VNWeb pour la gestion d'une école de danse : gestion des comptes (admin, professeurs, parents, élèves), communication par groupes et messagerie privée, suivi des groupes et des cours. Ce n'est pas un produit grand public : c'est un outil métier réservé au personnel et aux familles de l'école.
+
+L'application a été mise en production avec un niveau de sécurité minimal : au moment où j'en ai pris en charge la dimension sécurité, aucun pipeline CI/CD, aucune analyse statique ou dynamique de sécurité, et aucune politique de sécurité formalisée n'accompagnaient sa mise en ligne. C'est ce constat qui a fait de la sécurisation de cette application ma mission au sein de VNWeb, au-delà du développement de fonctionnalités.
+
+L'enjeu est renforcé par la nature des données traitées. La majorité des utilisateurs sont des enfants : les élèves de 15 ans ou plus disposent de leur propre compte, mais les mineurs de moins de 15 ans n'ont pas de compte autonome : leur profil (identité, date de naissance, coordonnées) est créé et géré par le compte de leur parent superviseur. L'absence de compte propre ne signifie pas absence de données : les informations personnelles des mineurs existent bien dans le système, et leur exposition en cas d'incident repose entièrement sur la sécurité du compte parent et de l'application elle-même. Une application déjà en production, traitant ce type de données sensibles, avec un niveau de sécurité minimal au départ, représente une fragilité réelle en cas d'attaque ou de fuite de données, pas un risque théorique.
 
 ### 2.2 Parties prenantes
 
-[à rédiger — tableau acteurs internes (rôle, périmètre) + acteurs externes (rôle, attentes)]
+| Acteur | Rôle | Périmètre |
+|---|---|---|
+| Vincent Nilles | Maître d'apprentissage, dirigeant VNWeb | Validation des orientations techniques et des priorités |
+| Ecaterina Munteanu | Développeuse fullstack, alternante | Sécurité applicative sur `api-dance`, `app-dance`, `cdn-app-dance` ; dossier RNCP |
+| [autres développeurs VNWeb impliqués sur ce projet] | [à préciser] | [à préciser] |
+
+| Acteur externe | Rôle | Attentes |
+|---|---|---|
+| [Direction de l'école de danse] | Commanditaire, cliente de VNWeb | Application fiable, conforme sur les données des familles |
+| Professeurs, parents, élèves | Utilisateurs finaux | Application utilisable au quotidien, sans exposition de leurs données ou de celles de leurs enfants |
+| AcadéNice | Organisme de formation et évaluateur | Couverture des compétences du référentiel RNCP37173 |
 
 ### 2.3 Objectifs du projet
 
-[à rédiger — scope fonctionnel acquis, objectifs restants avant mise en production, critères de succès mesurables (couverture de tests, performance, accessibilité, vulnérabilités, disponibilité, conformité RGPD)]
+**Scope fonctionnel acquis** : le périmètre fonctionnel est développé et utilisé en production : gestion des comptes et des rôles (admin, professeur, superviseur, élève), gestion des groupes et des cours, publication de posts (de groupe ou globaux) avec système de likes, messagerie privée 1-à-1, notifications push, espace d'administration complet (utilisateurs, validation des comptes, gestion des cours).
+
+**Objectifs restants** (constat détaillé dans le plan d'audit et de sécurisation, sections 6 à 9 de ce dossier) :
+
+- Mettre en place un pipeline CI/CD avec des portes de sécurité bloquantes : aucun n'existe à ce jour.
+- Auditer le contrôle d'accès sur les endpoints manipulant des données utilisateur, en particulier ceux liés aux enfants supervisés.
+- Mettre en place l'analyse statique de sécurité (SAST), l'audit des dépendances et la détection de secrets.
+- Conduire une analyse RGPD dédiée aux données des mineurs et documenter la base légale de leur traitement.
+- Clarifier et encadrer l'auto-assignation aux groupes, actuellement possible sans validation d'un tiers.
+- Statuer sur la surface encore exposée par les routes de commentaires non utilisées côté interface.
+
+**Critères de succès** :
+
+- Zéro vulnérabilité critique ou haute en production sur les parcours traitant des données de mineurs : seuil non négociable, sans compensation possible.
+- Conformité RGPD documentée : registre des traitements et base légale explicite pour les données des mineurs et des comptes gérés par un superviseur.
+- Pipeline CI/CD opérationnel avec au minimum lint, audit de dépendances et analyse statique bloquants.
+- [Cibles chiffrées (couverture de tests, disponibilité, performance) à définir avec VNWeb avant la version finale du dossier, non fixées arbitrairement dans ce brouillon.]
 
 ### 2.4 État actuel du projet
+
+L'application est en production active, utilisée au quotidien par l'école. À la différence d'un projet encore en développement où la sécurité peut être intégrée avant toute exposition réelle, la situation ici est inverse : l'application expose déjà des données de familles réelles, sans qu'un audit de sécurité formel ait précédé sa mise en ligne. Cela oriente la démarche vers une logique corrective autant que préventive : identifier les failles existantes, les corriger en priorité sur les parcours les plus sensibles (comptes, données des mineurs, messagerie), puis mettre en place les garde-fous durables (CI/CD sécurisé, politique de sécurité formalisée) pour que la sécurité cesse d'être, comme le formule la fiche RNCP37173 elle-même, un sujet traité en fin de projet.
 
 [à rédiger]
 
@@ -135,27 +167,89 @@ Les leviers les plus actionnables à court terme sont la valorisation de l'audit
 
 ### 4.1 Besoins fonctionnels
 
-[à rédiger — tableau ID / Besoin fonctionnel / Module, dérivé des fonctionnalités réelles de api-dance / app-dance / cdn-app-dance]
+| ID | Besoin fonctionnel | Module |
+|---|---|---|
+| BF-01 | Gestion des comptes et des rôles (admin, professeur, superviseur, élève) | api-dance (auth, admin) |
+| BF-02 | Cycle de validation d'un compte (validation email puis validation admin) | api-dance (auth) |
+| BF-03 | Gestion des enfants par un compte superviseur (création, modification, retrait) | api-dance (users) |
+| BF-04 | Invitation d'un tiers comme superviseur d'un enfant | api-dance (auth) |
+| BF-05 | Gestion des groupes et des cours | api-dance (groups) |
+| BF-06 | Auto-assignation ou retrait d'un groupe (professeur, élève) | api-dance (groups) |
+| BF-07 | Publication de posts (de groupe ou globaux) | api-dance (posts), app-dance |
+| BF-08 | Like sur un post | api-dance (posts) |
+| BF-09 | Messagerie privée en un-à-un | api-dance (chat), app-dance |
+| BF-10 | Notifications push (nouveau post, nouveau message, validation d'email, invitation de superviseur) | api-dance (web push), app-dance |
+| BF-11 | Upload et diffusion des médias (photos de cours, avatars) | cdn-app-dance |
+| BF-12 | Espace admin (utilisateurs, validation des comptes, emails non vérifiés, cours) | api-dance, app-dance |
+
+Ce tableau reflète le périmètre fonctionnel réellement développé et vérifié dans le code, pas un périmètre cible.
 
 ### 4.2 Besoins non-fonctionnels
 
-[à rédiger — tableau ID / Besoin non-fonctionnel / Critère mesurable]
+| ID | Besoin non-fonctionnel | Critère mesurable |
+|---|---|---|
+| BNF-01 | Confidentialité des données des mineurs | Aucune donnée personnelle d'un enfant accessible sans authentification valide du compte superviseur associé, vérifié lors de l'audit (section 6) |
+| BNF-02 | Disponibilité en production | Aucune interruption de service non planifiée pendant les interventions de sécurisation, validation préalable de Vincent Nilles pour toute intervention à risque |
+| BNF-03 | Absence de régression fonctionnelle | Chaque correction de sécurité validée sur le parcours concerné avant mise en production |
+| BNF-04 | Traçabilité des actions administrateur sensibles | Journalisation des actions de validation, suspension et suppression de compte, portée exacte définie en section 6 |
+| BNF-05 | Conformité RGPD sur les données des mineurs | Registre des traitements et base légale documentés, section 10 |
+| BNF-06 | Sécurité des échanges réseau | Chiffrement HTTPS de bout en bout, à vérifier lors de l'audit (section 6) |
+| BNF-07 | [Cibles chiffrées complémentaires (couverture de tests, temps de réponse) à définir avec VNWeb, non fixées arbitrairement dans ce brouillon.] | |
 
 ### 4.3 Contraintes
 
-[à rédiger — contraintes techniques, organisationnelles, réglementaires, temporelles]
+**Techniques** : la stack existante est imposée (AdonisJS/MySQL/Lucid pour `api-dance`, React/Ionic/Firebase pour `app-dance`, Express/Multer pour `cdn-app-dance`) ; le chantier de sécurisation porte sur l'existant, ce n'est pas une réécriture. L'application étant déjà en production, toute correction doit se faire sans interruption de service ni perte de données.
+
+**Organisationnelles** : l'équipe VNWeb est réduite à cinq personnes, dont quatre développeurs ; la sécurisation n'est pas un chantier à temps plein dédié, elle s'insère dans le rythme de l'alternance (quatre jours en entreprise, un jour à l'école par semaine). Les priorités sont validées par Vincent Nilles, maître d'apprentissage et dirigeant de VNWeb.
+
+**Réglementaires** : conformité RGPD requise, avec une attention particulière portée aux données des mineurs, notamment les élèves de moins de 15 ans dont le profil est géré par le compte de leur parent superviseur.
+
+**Temporelles** : dossier RNCP37173 à finaliser pour juin 2027.
 
 ### 4.4 Problématiques identifiées & Solutions retenues
 
-[à rédiger — P1, P2, P3... chaque problématique avec la décision technique ou organisationnelle retenue]
+**P1, comment sécuriser une application déjà exposée en production, avec des données réelles de familles, sans qu'aucun audit n'ait précédé sa mise en ligne ?**
+Solution retenue : une démarche corrective priorisée par criticité (section 6), en traitant en premier les parcours touchant les données des mineurs (comptes, messagerie), avant de mettre en place les garde-fous durables (pipeline CI/CD, politique de sécurité formalisée).
+
+**P2, comment intégrer une pratique de sécurité durable dans une équipe de cinq personnes, sans expert cybersécurité dédié en interne ?**
+Solution retenue : confier la mission de sécurisation à l'alternante en parallèle de sa formation RNCP37173, avec une mise en place progressive d'outils automatisés (analyse statique, audit de dépendances, détection de secrets) plutôt qu'un contrôle manuel récurrent qui ne serait pas soutenable dans le temps.
+
+**P3, comment garantir qu'aucune régression fonctionnelle n'accompagne les corrections de sécurité, alors qu'aucune suite de tests automatisés n'existe sur le projet ?**
+Constat : à ce jour, aucun test automatisé n'a été écrit sur `api-dance`, `app-dance` ou `cdn-app-dance`. La vérification de non-régression repose uniquement sur des essais manuels avant mise en production.
+Solution retenue : maintenir la validation manuelle ciblée sur le parcours modifié à chaque correction de sécurité, et positionner la construction d'une suite de tests automatisés comme un chantier à part entière du plan de sécurisation (section 9), et non comme un prérequis bloquant les corrections urgentes.
+
+**P4, comment traiter les écarts découverts pendant l'analyse du code (routes de commentaires encore actives côté backend malgré leur retrait de l'interface, redondance entre `isAdmin` et `status`, absence de vérification du lien superviseur-enfant sur l'invitation d'un tiers) sans bloquer l'avancement du chantier ?**
+Solution retenue : chaque écart est documenté et traité comme point d'audit à part entière (sections 6 et 9), plutôt que corrigé au fil de l'eau sans traçabilité.
 
 ### 4.5 Gestion de projet, WBS et suivi Kanban
 
-[à rédiger]
+Le chantier de sécurisation est découpé en lots qui reprennent la structure même de ce dossier, chaque lot correspondant à une section du plan de travail :
+
+| Lot | Contenu | Section du dossier |
+|---|---|---|
+| Lot 1 | Cadrage, recueil des besoins et des contraintes | Section 4 |
+| Lot 2 | Audit de sécurité de l'existant | Section 6 |
+| Lot 3 | Analyse des risques (AMDEC, EBIOS RM) | Sections 7 et 8 |
+| Lot 4 | Plan de migration et sécurisation, pipeline DevSecOps | Section 9 |
+| Lot 5 | Politique de sécurité formalisée | Section 10 |
+| Lot 6 | Plan de reprise d'activité et continuité de service | Section 11 |
+| Lot 7 | Bilan critique et bilan de compétences | Sections 12 et 13 |
+
+Le code est hébergé sur Gitea. Le suivi des tâches du projet se fait sur l'extranet interne de VNWeb, l'outil de gestion de projet hébergé par l'agence ; Notion reste un usage personnel de prise de notes, en dehors de ce circuit de suivi partagé avec l'équipe.
 
 ### 4.6 Extrait du backlog
 
-[à rédiger — tableau ID / User Story / Priorité (MoSCoW) / Statut]
+| ID | User Story | Priorité (MoSCoW) | Statut |
+|---|---|---|---|
+| US-01 | En tant qu'admin, je veux que le dépôt dispose d'un pipeline CI/CD avec des portes de sécurité bloquantes, afin qu'aucune vulnérabilité connue ne soit déployée en production. | Must | À faire |
+| US-02 | En tant que responsable sécurité, je veux auditer le contrôle d'accès sur les endpoints manipulant des données d'enfants supervisés, afin de vérifier qu'un utilisateur ne peut pas accéder aux données d'un enfant qui n'est pas le sien. | Must | À faire |
+| US-03 | En tant que VNWeb, je veux une analyse RGPD dédiée aux données des mineurs, afin de documenter la base légale de leur traitement. | Must | À faire |
+| US-04 | En tant qu'admin, je veux que l'auto-assignation aux groupes soit clarifiée, afin d'éviter qu'un élève rejoigne un groupe qui ne le concerne pas sans aucun contrôle. | Should | À faire |
+| US-05 | En tant que responsable sécurité, je veux statuer sur les routes de commentaires encore actives côté backend mais retirées de l'interface, afin de réduire la surface d'attaque exposée inutilement. | Should | À faire |
+| US-06 | En tant que développeuse, je veux résoudre la redondance entre `isAdmin` et `status` pour l'adminship, afin d'éviter une incohérence exploitable dans les contrôles d'accès. | Could | À faire |
+| US-07 | En tant que responsable sécurité, je veux qu'une invitation de superviseur ne puisse être envoyée que par un utilisateur déjà superviseur de l'enfant concerné, afin qu'un professeur ou un superviseur d'un autre enfant ne puisse pas donner accès aux données d'un mineur qui ne le concerne pas. | Must | À faire |
+
+Cet extrait reprend les objectifs restants déjà identifiés en section 2.3 et les écarts relevés dans l'analyse du code, reformulés en user stories.
 
 ---
 
@@ -163,21 +257,21 @@ Les leviers les plus actionnables à court terme sont la valorisation de l'audit
 
 ### 5.1 Architecture de l'application
 
-[à rédiger — schéma d'ensemble et rôle de chaque composant (api-dance, app-dance, cdn-app-dance, base de données, services tiers). Voir `docs/context/project_tech_stack.md` comme base factuelle.]
+[à rédiger : schéma d'ensemble et rôle de chaque composant (api-dance, app-dance, cdn-app-dance, base de données, services tiers).]
 
 ### 5.2 CDCT, Choix Des Composants Technologiques
 
 #### 5.2.1 Framework backend
 
-[à rédiger — pourquoi AdonisJS pour api-dance]
+[à rédiger : pourquoi AdonisJS pour api-dance]
 
 #### 5.2.2 Base de données et ORM
 
-[à rédiger — pourquoi MySQL/Lucid]
+[à rédiger : pourquoi MySQL/Lucid]
 
 #### 5.2.3 Framework frontend
 
-[à rédiger — pourquoi React/Ionic pour app-dance]
+[à rédiger : pourquoi React/Ionic pour app-dance]
 
 #### 5.2.4 Service d'authentification / services tiers
 
@@ -185,7 +279,7 @@ Les leviers les plus actionnables à court terme sont la valorisation de l'audit
 
 #### 5.2.5 Service de stockage et diffusion de fichiers
 
-[à rédiger — pourquoi un service CDN dédié (cdn-app-dance) plutôt qu'un stockage intégré à api-dance]
+[à rédiger : pourquoi un service CDN dédié (cdn-app-dance) plutôt qu'un stockage intégré à api-dance]
 
 #### 5.2.6 [Autre décision structurante à documenter]
 
@@ -205,7 +299,7 @@ Les leviers les plus actionnables à court terme sont la valorisation de l'audit
 
 ### 6.3 Findings identifiés
 
-[à rédiger — F-01, F-02... avec criticité, catégorie OWASP, constat, recommandation, statut]
+[à rédiger : F-01, F-02... avec criticité, catégorie OWASP, constat, recommandation, statut]
 
 ### 6.4 Synthèse et priorisation
 
@@ -221,7 +315,7 @@ Les leviers les plus actionnables à court terme sont la valorisation de l'audit
 
 ### Analyse par composant
 
-[à rédiger — AM-01, AM-02...]
+[à rédiger : AM-01, AM-02...]
 
 ### Synthèse AMDEC
 
@@ -233,7 +327,7 @@ Les leviers les plus actionnables à court terme sont la valorisation de l'audit
 
 ### Atelier 1 : Cadrage et socle de sécurité
 
-[à rédiger — valeurs métier, biens supports, événements redoutés]
+[à rédiger : valeurs métier, biens supports, événements redoutés]
 
 ### Atelier 2 : Sources de risques et objectifs visés
 
@@ -353,7 +447,7 @@ Les leviers les plus actionnables à court terme sont la valorisation de l'audit
 
 ### 13.2 Compétences organisationnelles et transverses
 
-[à rédiger — expériences réelles de collaboration (hackathons, équipe VNWeb) ; ne pas réutiliser telles quelles les mentions d'un projet ou d'une équipe qui ne correspondent pas à la réalité de cette alternance.]
+[à rédiger : expériences réelles de collaboration (hackathons, équipe VNWeb) ; ne pas réutiliser telles quelles les mentions d'un projet ou d'une équipe qui ne correspondent pas à la réalité de cette alternance.]
 
 ### 13.3 Application des compétences acquises : [projet personnel, si applicable]
 
@@ -361,4 +455,4 @@ Les leviers les plus actionnables à court terme sont la valorisation de l'audit
 
 ### 13.4 Axes de progression
 
-[à rédiger — axes réels et personnels, pas une généralité recopiée.]
+[à rédiger : axes réels et personnels, pas une généralité recopiée.]

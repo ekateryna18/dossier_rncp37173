@@ -69,9 +69,11 @@ Précision apportée par l'interview : un « groupe » est l'entité nommée (ex
 - Seule interaction disponible actuellement : le like.
 - Note de code : un modèle et des routes de commentaires existent encore côté backend (`comment_controller.ts`, `routes/comments.ts`, relation `comments` sur le modèle `User`), bien que la fonctionnalité ait été retirée côté interface pour le moment. Le backend reste donc joignable sur ce point même si l'app ne l'utilise plus — à garder en tête pour un futur audit de surface d'attaque.
 
-## Invitation de superviseur (fonctionnalité repérée dans le code, absente des notes initiales)
+## Invitation de superviseur
 
-Le code de `api-dance` (`auth_controller.ts`) montre un mécanisme distinct de l'ajout direct d'un enfant : un parent peut inviter par email une autre personne à devenir superviseur d'un de ses enfants. Si l'email correspond à un compte existant, une notification push « Nouvelle invitation » est envoyée. Ce point n'était pas décrit dans les notes fonctionnelles d'origine — à confirmer si c'est un flux à documenter comme fonctionnalité à part entière (invitation multi-parents sur un même enfant) ou un détail d'implémentation mineur.
+Fonctionnalité réelle et voulue, confirmée par l'utilisatrice après relecture du code (absente des notes fonctionnelles de départ, simple oubli de documentation). Le code de `api-dance` (`auth_controller.ts`) montre un mécanisme distinct de l'ajout direct d'un enfant : un parent peut inviter par email une autre personne à devenir superviseur d'un de ses enfants (cas d'usage type : parents séparés, tuteur). Si l'email correspond à un compte existant, une notification push « Nouvelle invitation » est envoyée. L'invitation n'est effective que si la personne invitée l'accepte explicitement (`handleSupervision`, `payload.accepted`) : ce n'est pas un rattachement automatique.
+
+**Écart de contrôle d'accès identifié dans le code** : la route `addSupervisor` (`auth_controller.ts`, ligne 560) vérifie seulement le rôle de l'appelant (professeur, superviseur, élève-superviseur), pas son lien réel avec l'enfant ciblé. Aucune vérification ne confirme que l'appelant est déjà superviseur de l'enfant pour lequel il envoie l'invitation. En connaissant l'identifiant d'un enfant, un compte ayant l'un de ces rôles peut donc inviter un tiers à devenir superviseur de cet enfant, même sans lien avec lui. Point à traiter en priorité lors de l'audit (section 6 du dossier), les données concernées étant celles de mineurs.
 
 ## Notifications push
 
@@ -106,5 +108,4 @@ Liste de tous les cours (recherche), modification, suppression, création d'un c
 ## Écarts et points encore ouverts
 
 - Le champ `isAdmin` (booléen) et le champ `status` (qui porte aussi la valeur `ADMIN`) représentent tous les deux l'adminship dans le modèle actuel — une redondance à garder en tête, pas un point bloquant pour ce document.
-- Le mécanisme d'invitation de superviseur (ci-dessus) mérite une confirmation explicite : fonctionnalité assumée et à documenter davantage, ou détail secondaire.
 - Aucune validation métier n'encadre l'auto-assignation aux groupes (élèves comme professeurs) — confirmé comme choix assumé, pas une lacune de ce document.
