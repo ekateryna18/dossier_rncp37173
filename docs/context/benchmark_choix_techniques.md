@@ -139,6 +139,20 @@ Ce sont les paramètres par défaut fournis par AdonisJS pour le pilote scrypt, 
 
 ---
 
+## 10. Conteneurisation : faut-il dockeriser ce projet
+
+**Constat actuel** : aucun des trois sous-projets (`api-dance`, `app-dance`, `cdn-app-dance`) n'est conteneurisé, ils s'exécutent directement sur le serveur, partageant le même système d'exploitation. Il n'y a pas de migration d'infrastructure en cours pour ce projet, la question est différente : ajouter une couche de conteneurisation sur l'existant, sans changer d'hébergeur.
+
+| Option | Isolation en cas de compromission d'un sous-projet | Reproductibilité de l'environnement de déploiement | Coût opérationnel pour une équipe de projet de 3 personnes | Niv |
+|---|---|---|---|---|
+| Pas de conteneurisation (situation actuelle) | Faible, un sous-projet compromis partage le même système d'exploitation et le même réseau que les deux autres | Faible, dépend de l'état exact du serveur au moment du déploiement | Nul, aucun outil supplémentaire à apprendre | L3 |
+| Docker, un conteneur par sous-projet | Bonne, un sous-projet compromis reste confiné à son propre conteneur, avec son propre système de fichiers et un réseau isolé par défaut | Élevée, l'environnement de build et d'exécution est décrit une fois et reproduit à l'identique à chaque déploiement | Modérée, une compétence de base à acquérir, mais des outils gratuits et largement documentés | L2 |
+| Machines virtuelles séparées par sous-projet | Bonne, isolation équivalente ou supérieure à Docker | Élevée | Élevée, chaque machine virtuelle a son propre système d'exploitation à maintenir et à mettre à jour séparément | L3 |
+
+**Recommandation** : dockeriser les trois sous-projets, en particulier `cdn-app-dance`. C'est le composant le plus exposé du dépôt : aucune authentification n'y a été repérée et il porte le risque d'injection de commande le plus sévère identifié dans ce projet (voir `docs/context/plan_audit.md`, F-10). Le confiner dans son propre conteneur limite ce qu'une compromission de ce service précis pourrait atteindre sur le reste de la plateforme, sans attendre que ce correctif soit lui-même déployé. La conteneurisation est aussi un prérequis naturel pour la mise en place d'un pipeline d'intégration continue (F-07) : un composant packagé sous forme d'image se déploie de façon identique à chaque étape du pipeline. Les machines virtuelles séparées offrent une isolation comparable mais à un coût de maintenance qu'une équipe de trois personnes, sans rôle dédié à l'infrastructure, ne peut pas absorber durablement.
+
+---
+
 ## Sources citées
 
-OWASP Top 10 (catégorie A03:2021, Injection) · OWASP Password Storage Cheat Sheet (Password Hashing Competition, Argon2id/bcrypt/scrypt/PBKDF2) · OWASP ASVS (contrôle d'accès et gestion de session) · Documentation officielle AdonisJS (`config/hash.ts`, `@adonisjs/auth`, `@adonisjs/cors`) · Code source vérifié de ce dépôt (`api-dance/config/*.ts`, `api-dance/app/models/user.ts`, `api-dance/start/ws.ts`).
+OWASP Top 10 (catégorie A03:2021, Injection) · OWASP Password Storage Cheat Sheet (Password Hashing Competition, Argon2id/bcrypt/scrypt/PBKDF2) · OWASP ASVS (contrôle d'accès et gestion de session) · Documentation officielle AdonisJS (`config/hash.ts`, `@adonisjs/auth`, `@adonisjs/cors`) · Documentation officielle Docker · Code source vérifié de ce dépôt (`api-dance/config/*.ts`, `api-dance/app/models/user.ts`, `api-dance/start/ws.ts`).

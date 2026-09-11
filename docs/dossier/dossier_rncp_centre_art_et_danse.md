@@ -434,7 +434,19 @@ Cette section compare, choix par choix, la technologie réellement utilisée dan
 
 **Recommandation** : séparer le service de fichiers du reste de l'API reste une bonne décision d'isolation, elle est confirmée par les bonnes pratiques de réduction de surface d'attaque. Mais le choix d'un service interne plutôt qu'un stockage objet cloud managé laisse à la charge de VNWeb la responsabilité de sécuriser lui-même ce service, ce qui n'est pas encore fait puisqu'aucune authentification n'y a été repérée. Un service cloud managé aurait fourni ce contrôle d'accès nativement, au prix d'une dépendance à un fournisseur tiers et d'une facturation à l'usage. Ce n'est pas un point à trancher immédiatement dans ce document, mais un arbitrage à documenter dans le plan de sécurisation (section 9) : durcir le service actuel, ou migrer vers un stockage géré.
 
-**Sources citées pour ce benchmark** : OWASP Top 10 (catégorie A03:2021, Injection), OWASP Password Storage Cheat Sheet, OWASP ASVS (contrôle d'accès et gestion de session), documentation produit officielle du framework backend, et lecture directe du code source de ce dépôt.
+#### 5.3.10 Conteneurisation : faut-il dockeriser ce projet
+
+**Constat actuel** : aucun des trois composants (backend, interface utilisateur, service de fichiers) n'est conteneurisé à ce jour, ils s'exécutent directement sur le serveur, partageant le même système d'exploitation. Il n'y a pas de migration d'infrastructure en cours ni prévue pour ce projet, la question ici est différente : ajouter une couche de conteneurisation sur l'existant, sans en changer l'hébergement.
+
+| Option | Isolation en cas de compromission d'un composant | Reproductibilité de l'environnement de déploiement | Coût opérationnel pour une équipe de projet de 3 personnes | Niv |
+|---|---|---|---|---|
+| Pas de conteneurisation (situation actuelle) | Faible : un composant compromis partage le même système d'exploitation et le même réseau que les deux autres | Faible, dépend de l'état exact du serveur au moment du déploiement | Nul, aucun outil supplémentaire à apprendre | L3 |
+| Docker, un conteneur par composant | Bonne : un composant compromis reste confiné à son propre conteneur, avec son propre système de fichiers et un réseau isolé par défaut | Élevée, l'environnement de build et d'exécution est décrit une fois et reproduit à l'identique à chaque déploiement | Modérée : une compétence de base à acquérir, mais des outils gratuits et largement documentés | L2 |
+| Machines virtuelles séparées par composant | Bonne, isolation équivalente ou supérieure à Docker | Élevée | Élevée, chaque machine virtuelle a son propre système d'exploitation à maintenir et à mettre à jour séparément | L3 |
+
+**Recommandation** : dockeriser les trois composants, en particulier le service de fichiers. C'est le composant le plus exposé de ce dépôt : aucune authentification n'y a été repérée (F-06) et il porte le risque d'injection de commande le plus sévère identifié dans ce dossier (F-10). Le confiner dans son propre conteneur limite ce qu'une compromission de ce service précis pourrait atteindre sur le reste de la plateforme, sans attendre que le correctif de F-10 soit lui-même déployé. La conteneurisation est également un prérequis naturel pour la mise en place du pipeline d'intégration continue recommandé en F-07 : un composant packagé sous forme d'image se déploie de façon identique à chaque étape du pipeline, du poste de développement à la production. Les machines virtuelles séparées offrent une isolation comparable mais à un coût de maintenance qu'une équipe de trois personnes, sans rôle dédié à l'infrastructure, ne peut pas absorber durablement.
+
+**Sources citées pour ce benchmark** : OWASP Top 10 (catégorie A03:2021, Injection), OWASP Password Storage Cheat Sheet, OWASP ASVS (contrôle d'accès et gestion de session), documentation produit officielle du framework backend et de Docker, et lecture directe du code source de ce dépôt.
 
 ---
 
@@ -497,10 +509,10 @@ Le référentiel utilisé pour juger la solidité d'un contrôle est l'OWASP ASV
 
 | Catégorie | Outil retenu | Justification |
 |---|---|---|
-| SAST principal | CodeQL | Analyse de flux de données de bout en bout, pertinent pour tracer le chemin de la donnée de F-10, s'intègre nativement à la plateforme d'hébergement du code. |
+| SAST principal | CodeQL | Analyse de flux de données de bout en bout, pertinent pour tracer le chemin de la donnée de F-10, exécutable via le flux d'intégration continue autohébergé de ce dépôt. |
 | SAST complémentaire | Semgrep | Règles personnalisables, utile pour cibler des motifs spécifiques aux briques utilisées par ce projet, exécution locale rapide avant chaque envoi de code. |
-| Audit de dépendances | Un outil de veille automatique sur les vulnérabilités connues, plus une vérification bloquante intégrée à la validation continue | Zéro infrastructure à maintenir, alerte automatique sur nouvelle vulnérabilité, cohérent avec les trois composants qui ont chacun leurs propres dépendances. |
-| Détection de secrets | Un scanner de secrets versionné dans le pipeline, en complément du filet natif de la plateforme d'hébergement | Double filet, pertinent vu la lacune constatée en F-13. |
+| Audit de dépendances | Renovate, autohébergeable | Fonctionne indépendamment de la plateforme d'hébergement du code (voir 9, benchmark dédié), alerte automatique sur nouvelle vulnérabilité, cohérent avec les trois composants qui ont chacun leurs propres dépendances. |
+| Détection de secrets | Gitleaks | Seul filet automatisé sur ce point, la plateforme d'hébergement autohébergée de ce dépôt ne propose pas de détection de secrets native (voir 9, benchmark dédié). Pertinent vu la lacune constatée en F-13. |
 | Revue de configuration manuelle | Lecture directe et checklist du référentiel OWASP ASVS (chapitres contrôle d'accès, cryptographie du stockage, sécurité des API) | Pas d'outil automatique fiable pour juger si un contrôle d'accès porte sur la bonne propriété métier (F-01) : la lecture humaine reste nécessaire. |
 | DAST | OWASP ZAP | Voir 6.2.2. |
 
@@ -508,17 +520,17 @@ Le référentiel utilisé pour juger la solidité d'un contrôle est l'OWASP ASV
 
 | Option | Intégration à la validation continue | Couverture du langage utilisé | Coût | Niveau de preuve |
 |---|---|---|---|---|
-| CodeQL | Native sur la plateforme d'hébergement de ce dépôt | Analyse de flux de données inter-procédurale | Gratuit sur ce type de dépôt | L2, documentation produit officielle |
+| CodeQL | Exécutable via le flux d'intégration continue autohébergé de ce dépôt, sans être un service géré intégré comme sur une plateforme propriétaire | Analyse de flux de données inter-procédurale | Gratuit sur ce type de dépôt | L2, documentation produit officielle |
 | Semgrep | Intégration tierce, configuration simple | Analyse par motifs, règles communautaires et personnalisées | Gratuit en usage standard | L2, documentation produit officielle |
 | Analyseur de style avec règles de sécurité complémentaires | Déjà présent si l'analyseur de style du projet est actif | Détection de motifs à risque limités, pas d'analyse de flux | Gratuit | L3, consensus technique large, pas un standard formel |
 
-**Recommandation** : CodeQL en outil principal, Semgrep en complément ciblé. CodeQL est le seul des trois à tracer un flux de données de bout en bout, pertinent pour confirmer ou infirmer F-10, et s'intègre sans service tiers. Semgrep comble sa limite principale : des règles rapides à écrire pour des motifs propres à ce dépôt (une requête construite en contournant les protections habituelles de l'ORM, un point d'entrée sans validation des données reçues). L'analyseur de style avec règles de sécurité reste utile en filet local avant chaque envoi de code, mais ne remplace pas une analyse de flux.
+**Recommandation** : CodeQL en outil principal, Semgrep en complément ciblé. CodeQL est le seul des trois à tracer un flux de données de bout en bout, pertinent pour confirmer ou infirmer F-10, et s'intègre sans dépendre d'un service tiers payant. Semgrep comble sa limite principale : des règles rapides à écrire pour des motifs propres à ce dépôt (une requête construite en contournant les protections habituelles de l'ORM, un point d'entrée sans validation des données reçues). L'analyseur de style avec règles de sécurité reste utile en filet local avant chaque envoi de code, mais ne remplace pas une analyse de flux.
 
 #### 6.2.2 Choix de l'outil DAST
 
 | Option | Coût | Automatisable en continu | Couverture attendue sur ce périmètre | Niveau de preuve |
 |---|---|---|---|---|
-| OWASP ZAP | Gratuit | Oui, des intégrations officielles existent pour un scan rapide et pour un scan complet | Bonne sur les échanges HTTP classiques ; ne couvre pas nativement le canal de messagerie en temps réel (F-02) | L2, projet officiel de la fondation OWASP |
+| OWASP ZAP | Gratuit | Oui, des images officielles existent pour un scan rapide et pour un scan complet, exécutables depuis n'importe quel système d'intégration continue | Bonne sur les échanges HTTP classiques ; ne couvre pas nativement le canal de messagerie en temps réel (F-02) | L2, projet officiel de la fondation OWASP |
 | Nikto | Gratuit | Oui, mais moins maintenu pour les API modernes | Orienté serveur web générique, peu adapté à une API construite pour des échanges de données structurées | L3, consensus technique large, outil plus ancien |
 | Burp Suite (édition communautaire) | Gratuit en usage manuel, payant pour l'automatisation continue | Non automatisable en continu dans l'édition gratuite | Bonne en usage manuel ponctuel, mais pas dans un pipeline continu | L2, documentation produit officielle |
 
@@ -753,7 +765,38 @@ Risques bloquants avant toute mise en production :
 
 ### Pipeline DevSecOps, sécurité automatisée à chaque phase du cycle
 
-[à rédiger]
+Le code de ce projet est hébergé sur une plateforme autohébergée (Gitea), pas sur une plateforme propriétaire qui fournirait certains contrôles de sécurité de façon intégrée. Ce choix d'hébergement conditionne directement les outils retenus ci-dessous : un outil qui dépend du service propriétaire d'une plateforme précise n'est simplement pas utilisable ici, indépendamment de sa qualité. Un outil de sécurité n'a de valeur que s'il s'exécute au bon moment du cycle de développement, un outil activé trop tard ne bloque pas la vulnérabilité, il la signale après qu'elle est déjà intégrée au code partagé.
+
+| Phase | Déclencheur | Outil | Ce qu'il détecte | Action |
+|---|---|---|---|---|
+| Avant le commit | Tentative d'enregistrement d'un commit sur le poste du développeur | Gitleaks | Secrets, clés ou jetons présents dans le code ou dans l'historique | Bloquant, le commit est refusé si un secret est détecté |
+| À chaque envoi de code | Envoi vers le dépôt partagé | Analyseur de style avec règles de sécurité, puis Semgrep | Motifs dangereux courants (validation d'entrée manquante, requête construite en contournant les protections habituelles de l'ORM, configuration réseau permissive) | Bloquant sur les constats de sévérité haute |
+| À l'ouverture ou la mise à jour d'une demande de fusion | Demande de fusion ouverte ou mise à jour | CodeQL | Analyse par flux de données : trace une entrée utilisateur depuis le réseau jusqu'à un accès à la base de données ou une réponse HTTP, à travers plusieurs étapes du code | Bloquant sur les constats de sévérité haute |
+| À l'ouverture ou la mise à jour d'une demande de fusion | Demande de fusion ouverte ou mise à jour | Renovate | Vulnérabilité connue sur une bibliothèque utilisée par l'un des trois composants | Proposition automatique de mise à jour ; bloquant sur sévérité haute ou critique |
+| Après chaque déploiement sur un environnement de test | Déploiement sur l'environnement de préproduction | OWASP ZAP | Vulnérabilités observables uniquement à l'exécution (contrôle d'accès, injection, en-têtes de sécurité) | Rapport de constats ; validation requise avant toute promotion en production |
+| En continu, une fois en production | Publication d'une nouvelle vulnérabilité sur une dépendance déjà utilisée | Renovate, en veille continue | Vulnérabilité découverte après coup sur une bibliothèque qui n'a pas changé depuis son intégration | Alerte et proposition de mise à jour, sans attendre un prochain envoi de code |
+
+**Pourquoi cet ordre n'est pas interchangeable** : Gitleaks doit s'exécuter avant le commit, une fois un secret entré dans l'historique du code, il reste lisible par quiconque récupère une copie complète du dépôt, même après suppression du fichier qui le contenait. Semgrep s'exécute avant CodeQL parce qu'il est plus rapide, il élimine les motifs évidents en quelques secondes à chaque envoi de code, ce qui laisse à CodeQL, plus lent, la tâche plus coûteuse de tracer les flux complexes uniquement sur les demandes de fusion qui passent ce premier filtre. OWASP ZAP ne peut pas s'exécuter avant le commit ou l'envoi de code, il a besoin d'une application déployée et en cours d'exécution, c'est le seul outil de ce pipeline capable de valider le comportement réel plutôt que le seul code source. Renovate agit à deux moments distincts : au moment d'une demande de fusion pour les dépendances déjà connues comme problématiques, et en continu par la suite, parce qu'une vulnérabilité peut être publiée sur une bibliothèque des mois après son intégration, sans qu'aucun envoi de code de l'équipe ne la déclenche.
+
+**Choix de l'outil d'audit de dépendances**
+
+| Option | Compatible avec un dépôt autohébergé | Automatisation | Coût | Niv |
+|---|---|---|---|---|
+| Renovate (retenu) | Oui, autohébergeable ou exécutable en tâche planifiée, indépendant de la plateforme d'hébergement | Ouvre automatiquement une proposition de mise à jour dès qu'une vulnérabilité est publiée sur une dépendance utilisée | Gratuit, projet open source | L2 |
+| Dependabot | Non, service propriétaire lié à l'infrastructure d'une plateforme d'hébergement précise, non disponible sur un dépôt autohébergé | Équivalente à Renovate, mais seulement sur la plateforme qui le propose nativement | Gratuit sur cette plateforme uniquement | L2 |
+| Audit de dépendances exécuté manuellement, sans automatisation | Oui, outil en ligne de commande indépendant de tout hébergement | Aucune, dépend d'une exécution manuelle régulière que rien ne garantit | Gratuit | L3 |
+
+**Recommandation** : Renovate, précisément parce que ce dépôt est hébergé sur une plateforme autohébergée et non sur une plateforme qui fournit ce service de façon intégrée. Dependabot n'est pas simplement moins bien adapté ici, il n'est techniquement pas utilisable sur ce dépôt. Un audit manuel resterait possible mais sans automatisation, la vérification ne se ferait qu'au moment où quelqu'un pense à la lancer, ce qui contredit le principe même d'une veille continue.
+
+**Choix de l'outil de détection de secrets**
+
+| Option | Compatible avec un dépôt autohébergé | Couverture | Coût | Niv |
+|---|---|---|---|---|
+| Gitleaks (retenu) | Oui, outil en ligne de commande indépendant de la plateforme d'hébergement | Scanne l'historique complet des commits, pas seulement l'état courant du code | Gratuit | L2 |
+| TruffleHog | Oui, même principe de fonctionnement | Scanne également l'historique complet, avec une vérification active de la validité de certains types de secrets détectés | Gratuit en usage standard | L2 |
+| Revue manuelle du code avant chaque envoi | Oui, ne dépend d'aucun outil | Dépend entièrement de la vigilance de la personne qui relit, sans garantie de couverture de l'historique complet | Gratuit, mais coûteux en temps humain | L3 |
+
+**Recommandation** : Gitleaks, retenu plutôt que TruffleHog parce qu'il s'intègre plus simplement comme porte bloquante avant le commit, ce qui correspond au besoin ici, empêcher un secret d'entrer dans l'historique plutôt que le découvrir après coup. TruffleHog reste une alternative valable, en particulier pour sa vérification active de la validité des secrets détectés, à envisager en complément si le volume de fausses alertes de Gitleaks devenait un problème réel.
 
 ---
 
