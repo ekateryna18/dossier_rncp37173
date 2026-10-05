@@ -23,7 +23,7 @@ La PSSI s'appuie sur des textes et des référentiels extérieurs (le RGPD, les 
 
 Ce partage déplace le risque. L'IA n'a plus l'occasion d'oublier de chercher ou de s'appuyer sur un site secondaire, mais ce qui n'est pas dans la liste de sources n'est pas vu : le choix des sources devient le point sensible du dispositif (section 4).
 
-- Aucune règle de la PSSI n'est modifiée parce qu'un fichier de veille le suggère. Toute modification passe par le chemin de décision écrit du §8.3 de la PSSI (proposition, réponse de la direction sous 30 jours, ou fiche de dérogation).
+- Aucune règle de la PSSI n'est modifiée parce qu'un fichier de veille le suggère. Toute modification passe par le chemin de décision écrit de la section 8.3 de la PSSI (proposition, réponse de la direction sous 30 jours, ou fiche de dérogation).
 - Une exception de délai : pour une faille critique, un correctif de sécurité relève déjà de la règle R-34 et ne demande pas de décision préalable ; un chemin court est prévu (6.5).
 
 **Ce que cette procédure promet, et ce qu'elle ne promet pas.** Elle ne garantit pas qu'aucune évolution n'échappe à la surveillance : un dispositif de veille ne peut pas l'affirmer, et une source oubliée ou un flux incomplet créent des angles morts. Elle garantit ceci : chaque élément qui figure dans une source surveillée est lu dans un délai connu, classé, tracé dans un registre, et donne lieu à une décision écrite quand il touche une règle ; et un raté, quand il est constaté, est noté et corrigé (4.5). C'est ce qui rend l'actualité de la PSSI vérifiable.
@@ -34,7 +34,7 @@ Ce partage déplace le risque. L'IA n'a plus l'occasion d'oublier de chercher ou
 
 | Thème | Volet | Ce qu'il surveille | Ce qu'il déclenche dans la PSSI | Cadence de lecture (valeur proposée) |
 |---|---|---|---|---|
-| **1. Conformité** (existe déjà, automatisé sur Claude : **Déclaré**) | Organisationnel | RGPD, CNIL, ANSSI, ISO 27001, NIS2 et DORA | Modification de règle, dérogation (§8.3, règle R-05) | Hebdomadaire |
+| **1. Conformité** (existe déjà, automatisé sur Claude : **Déclaré**) | Organisationnel | RGPD, CNIL, ANSSI, ISO 27001, NIS2 et DORA | Modification de règle, dérogation (section 8.3, règle R-05) | Hebdomadaire |
 | **2. Failles de sécurité** (nouveau) | Technique | Failles des systèmes, des frameworks, des dépendances et des services AWS | Correctif (règle R-34) | Immédiate si faille critique, sinon hebdomadaire |
 | **3. Menaces et attaques** (nouveau) | Organisationnel et technique | Hameçonnage, rançongiciels visant les PME et les agences web, fraude par usurpation (VO-05) | Contenu de la formation (section 21) ; point d'attention pour la gestion d'incident (section 17) | Mensuelle ; annuelle pour le *Panorama de la cybermenace* de l'ANSSI |
 | **4. Fin de support et fournisseurs** (nouveau) | Technique | Versions qui n'auront plus de correctifs (système, PHP, environnements d'exécution AWS) ; incidents et changements chez AWS, Discord, Gitea et les hébergeurs | Migration planifiée (inventaire, règle R-33) ; revue de l'exigence envers un prestataire (section 13) | Mensuelle |
@@ -47,12 +47,12 @@ Ce partage déplace le risque. L'IA n'a plus l'occasion d'oublier de chercher ou
 
 ### 2.1 Thème 1, conformité : référentiels et poids
 
-Tous les référentiels n'ont pas le même poids. Le RGPD est une obligation légale et prévaut sur la PSSI en cas de divergence (PSSI §7) ; les guides de l'ANSSI et de la CNIL sont des recommandations ; ISO 27001 et OWASP sont des références de sécurité que VNWeb choisit de suivre. Le poids détermine l'urgence de la réaction.
+Tous les référentiels n'ont pas le même poids. Le RGPD est une obligation légale et prévaut sur la PSSI en cas de divergence (section 7 de la PSSI) ; les guides de l'ANSSI et de la CNIL sont des recommandations ; ISO 27001 et OWASP sont des références de sécurité que VNWeb choisit de suivre. Le poids détermine l'urgence de la réaction.
 
 | Référentiel | Poids | Sections de la PSSI qui en dépendent | Ce qu'on guette |
 |---|---|---|---|
 | RGPD (notamment chapitre V, articles 28, 30, 33), et les décisions, guides et sanctions de la CNIL et du Comité européen de la protection des données | Obligation légale | 13 (prestataires), 15 (données et conformité), 17 (incident, à venir) | Nouvelle décision ou doctrine de la CNIL, évolution du cadre applicable aux transferts hors Union européenne (il conditionne la règle R-57 : table `users` de weevus en Ohio), évolution des délais et formes de notification d'une fuite |
-| Directive NIS2 et règlement DORA (règlement (UE) 2022/2554) | À établir : applicabilité à VNWeb non déterminée (PSSI §7) | Aucune à ce jour | NIS2 : état de la transposition en droit français. DORA : règlement, donc sans transposition [à vérifier : conséquence générale du droit de l'Union, source non ouverte], champ d'application (entités financières et leurs prestataires de services informatiques). Réévaluer avec la direction si VNWeb, ou ses clients, entrent dans le champ |
+| Directive NIS2 et règlement DORA (règlement (UE) 2022/2554) | À établir : applicabilité à VNWeb non déterminée (section 7 de la PSSI) | Aucune à ce jour | NIS2 : état de la transposition en droit français. DORA : règlement, donc sans transposition [à vérifier : conséquence générale du droit de l'Union, source non ouverte], champ d'application (entités financières et leurs prestataires de services informatiques). Réévaluer avec la direction si VNWeb, ou ses clients, entrent dans le champ |
 | ANSSI, *Guide d'hygiène informatique* (42 mesures, édition de 2017 ; version exacte à confirmer en ouvrant le PDF [à vérifier]) | Recommandation | 9 à 15 | Nouvelle version du guide, nouvelles mesures, mesures retirées |
 | ANSSI, *Recommandations relatives à l'authentification multifacteur et aux mots de passe* (8 octobre 2021) ; CNIL, recommandation sur les mots de passe et autres secrets partagés (délibération n° 2022-100 du 21 juillet 2022) ; recommandation de la CNIL sur l'authentification multifacteur (date et numéro à vérifier) | Recommandation | 9 (accès), 10 (secrets) | Révision de ces textes, notamment sur la longueur des mots de passe et les facteurs recommandés |
 | ISO 27001:2022, Annexe A | Norme volontaire, grille de comparaison sans visée de certification | Références citées en tête des sections 8 à 16 | Amendement, nouvelle édition, changement de numérotation ou de contenu d'un contrôle cité |
@@ -215,7 +215,7 @@ Les analyseurs de dépendances lisent les dépendances exactes verrouillées de 
 
 | Couche | Ce qu'on surveille | Comment | Qui | Ce que ça déclenche |
 |---|---|---|---|---|
-| **Serveurs** : vnw2, serveurs locaux (dont Gitea et l'Extranet) ; le serveur des sites de voyance suit le même principe par son prestataire | Mises à jour du système et des logiciels installés | Règle R-34 ; bulletins de sécurité de la distribution. Sur les serveurs externes, le prestataire applique et VNWeb demande par écrit (cahier d'exigences, règle R-43) | Référent (serveurs locaux) ; prestataires (serveurs externes) | Mise à jour selon les délais de 5.3 |
+| **Serveurs** : ScalarX, serveurs locaux (dont Gitea et l'Extranet) ; le serveur des sites de voyance suit le même principe par son prestataire | Mises à jour du système et des logiciels installés | Règle R-34 ; bulletins de sécurité de la distribution. Sur les serveurs externes, le prestataire applique et VNWeb demande par écrit (cahier d'exigences, règle R-43) | Référent (serveurs locaux) ; prestataires (serveurs externes) | Mise à jour selon les délais de 5.3 |
 | **Dépendances des projets** | Failles connues dans les bibliothèques et frameworks de chaque projet | Analyseur de dépendances dans la livraison (règles R-53 et R-54) et outil de mises à jour automatiques ; outils à choisir selon les langages, à confirmer (VEI-H) | Développeurs, pour leurs propres projets | Correctif du projet, selon 5.3 |
 | **Cloud (weevus)** | Failles et fins de support des services AWS utilisés | AWS Security Bulletins et avis de dépréciation d'AWS (2.2) | Référent, en lien avec le développeur de weevus | Correctif ou migration planifiée (thème 4) |
 | **Alertes officielles** | Failles annoncées pour tout produit inventorié | Flux CERT-FR (avis et alertes) et catalogue CISA des failles déjà exploitées (fichier JSON lu par un petit programme, pas de flux RSS constaté), rapprochés de l'inventaire | Référent | Repérage puis chemin de 6.5 si critique |
@@ -262,7 +262,7 @@ Ce volet suit les hameçonnages, les rançongiciels visant les PME et les agence
 - alimenter le **contenu de la formation** (section 21) ;
 - signaler un **point d'attention pour la gestion d'incident** (section 17), par exemple un mode opératoire qui change la manière de reconnaître un incident.
 
-Un élément de ce thème ne modifie pas une règle par lui-même : s'il conduit à en proposer une, il suit le chemin du §8.3 (6.4).
+Un élément de ce thème ne modifie pas une règle par lui-même : s'il conduit à en proposer une, il suit le chemin de la section 8.3 (6.4).
 
 ---
 
@@ -277,7 +277,7 @@ Un élément de ce thème ne modifie pas une règle par lui-même : s'il conduit
 | Chaque semaine (valeur proposée) | Lecture des fichiers des thèmes 1 et 2, tri selon les niveaux de 6.2, contrôle de la présence des fichiers, lecture du résumé hebdomadaire des failles | Référent (suppléant en son absence) | Éléments N1 et N2 inscrits au registre (6.3) |
 | Dès repérage d'une faille critique | Chemin court (6.5) | Référent, développeurs, direction | Ligne au registre, correctif daté |
 | Chaque mois (valeur proposée) | Tri des thèmes 3 et 4 ; condensé mensuel des menaces ; test de couverture (4.4) | IA ; référent | Condensé diffusé ; éléments du thème 4 au registre ; résultat du test |
-| Sous 30 jours après inscription d'un élément N2 (valeur proposée) | Vérification dans le texte officiel, repérage des règles touchées, proposition écrite à la direction | Référent, direction | Fiche instruite ; décision selon le §8.3 |
+| Sous 30 jours après inscription d'un élément N2 (valeur proposée) | Vérification dans le texte officiel, repérage des règles touchées, proposition écrite à la direction | Référent, direction | Fiche instruite ; décision selon la section 8.3 |
 | Chaque année, à la parution (édition 2025 parue le 11 mars 2026) | Lecture du *Panorama de la cybermenace* de l'ANSSI (thème 3), rapprochée du contenu de la formation (section 21) | Référent | Ligne au registre et, si besoin, mise à jour du condensé |
 | Chaque trimestre | Point de veille dans le compte rendu de sécurité (règle R-03) : éléments repérés, en cours, décidés ; synthèse trimestrielle ; revue de l'inventaire (règle R-33) | Référent | Une ligne « veille » dans le compte rendu daté |
 | Chaque année | Revue complète de la section 7 de la PSSI : version en vigueur de chaque référentiel, comparaison avec celle citée dans la PSSI, revue de la PSSI (principe PR-8) | Référent, direction | Section 7 de la PSSI à jour, date de la vérification consignée |
@@ -329,7 +329,7 @@ Une faille critique qui touche un composant utilisé ne passe pas par la proposi
 
 ## 7. Rôles
 
-D : décide. R : réalise. C : est consulté. I : est informé. Un tiret : non concerné. Mêmes lettres que le §8.2 de la PSSI.
+D : décide. R : réalise. C : est consulté. I : est informé. Un tiret : non concerné. Mêmes lettres que la section 8.2 de la PSSI.
 
 | Activité | Direction | Référent | Suppléant | Développeurs |
 |---|---|---|---|---|
@@ -343,7 +343,7 @@ D : décide. R : réalise. C : est consulté. I : est informé. Un tiret : non c
 
 **Principe.** Le référent pilote la veille et répond devant la direction. Les développeurs surveillent et corrigent les composants de leurs propres projets. Tout le monde reçoit le condensé mensuel. Une responsabilité unique par activité évite que chacun pense qu'un autre a vu. Le suppléant tient les fonctions du référent en son absence, avec les mêmes accès (principe PR-5 : la veille ne repose pas sur une seule personne).
 
-**Charge de temps du référent :** environ une heure par semaine en moyenne (valeur proposée), à valider par la direction, qui alloue le temps et les moyens (§8.1 de la PSSI) ; elle est à mesurer sur les premiers mois, puis à ajuster (VEI-J).
+**Charge de temps du référent :** environ une heure par semaine en moyenne (valeur proposée), à valider par la direction, qui alloue le temps et les moyens (section 8.1 de la PSSI) ; elle est à mesurer sur les premiers mois, puis à ajuster (VEI-J).
 
 **Maintenance du dispositif.** L'auditrice, à l'origine du dispositif automatisé, maintient les tâches (consignes données à l'agent, sources, planification) tant que cette maintenance n'est pas confiée au référent : à décider (VEI-C).
 
@@ -382,7 +382,7 @@ VEI-A à VEI-F viennent de la version précédente ; ils sont reformulés quand 
 | VEI-G | Établir les technologies des projets : langages et versions, frameworks, gestionnaires de paquets (le dossier ne cite que PHP) ; distribution et version des serveurs | Prérequis de la veille des failles (5.1) |
 | VEI-H | Choisir l'analyseur de dépendances et l'outil de mises à jour automatiques selon les langages, et vérifier ce que chaque outil fait réellement | Les candidats de 5.2 sont documentés, mais leur adéquation aux langages réels de VNWeb n'est pas établie, et l'inventaire issu des fichiers de verrouillage reste à vérifier avec l'outil retenu (5.1) |
 | VEI-I | Vérifier, source par source, l'existence d'un flux RSS et choisir un repli pour les sources qui n'en ont pas (ISO en particulier) | L'existence d'un flux n'est pas garantie ; l'état constaté par le fact-check est en 2.2 et 4.1 (VEI-O pour les tests manuels) |
-| VEI-J | Faire valider par la direction la charge de temps du référent (environ une heure par semaine) et la mesurer sur les premiers mois | §8.1 de la PSSI : la direction alloue le temps et les moyens |
+| VEI-J | Faire valider par la direction la charge de temps du référent (environ une heure par semaine) et la mesurer sur les premiers mois | section 8.1 de la PSSI : la direction alloue le temps et les moyens |
 | VEI-K | Harmoniser les délais de 5.3 (72 heures, 7 jours) avec la règle R-34 (serveurs locaux : au moins chaque mois, sans attendre en cas de faille critique annoncée) et avec le cahier d'exigences aux prestataires (R-43). La règle R-54 est déjà alignée (21/09/2026) | Éviter deux délais différents pour la même faille |
 | VEI-L | Définir le seuil « critique », la notion de faille « exploitée » et le moyen de prévenir le référent sans attendre la lecture hebdomadaire (notification du lecteur de flux, courriel, ou fichier quotidien) | Sans cela, « immédiate » n'a pas de contenu (6.1) |
 | VEI-M | Décrire la chaîne technique : passage des éléments du lecteur de flux à l'IA, emplacement des fichiers, exécution du script de complétude, qui le maintient | Rendre le dispositif reproductible et vérifiable (3.1, 4.3) |

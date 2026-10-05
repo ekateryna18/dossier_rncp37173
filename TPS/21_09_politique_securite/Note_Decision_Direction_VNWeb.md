@@ -19,20 +19,22 @@ Cette note présente les douze décisions qui dépendent de la direction, parce 
 
 ## 2. Ce que l'audit a établi
 
-**Confirmé** signifie prouvé par une vérification faite sur le serveur des projets le 17/09/26. **Déclaré** signifie décrit par l'équipe, sans vérification à ce jour.
+**Confirmé** signifie prouvé par une vérification faite sur le serveur ScalarX le 17/09/26, ou sur la console AWS et le réseau le 25/09/26. **Déclaré** signifie décrit par l'équipe, sans vérification à ce jour.
 
 | Constat | Statut | Source |
 |---|---|---|
-| Le serveur des projets (production et préproduction) autorise la connexion directe en administrateur (root) | Confirmé | Rapport d'audit J2, constat 1 |
-| Aucun compte individuel sur le serveur des projets : environ une centaine de comptes, un par projet, partagés par toute personne qui travaille dessus | Confirmé | J2, constat 5 |
-| Dans les journaux, on ne peut pas identifier la personne derrière un compte | Confirmé | J2, constat 6 |
-| Aucune sauvegarde planifiée n'est visible sur le serveur des projets (un autre mécanisme n'a pas été vérifié) | Confirmé | J2, constat 7 |
-| Les journaux de connexion sont conservés environ quatre semaines | Confirmé | J2, constat 8 |
+| Le serveur ScalarX (production et préproduction) autorise la connexion directe en administrateur (root) | Confirmé | Rapport d'audit J2, écart 1 |
+| Aucun compte individuel sur le serveur ScalarX : environ une centaine de comptes, un par projet, partagés par toute personne qui travaille dessus | Confirmé | J2, écart 6 |
+| Dans les journaux, on ne peut pas identifier la personne derrière un compte | Confirmé | J2, écart 7 |
+| Aucune sauvegarde planifiée n'est visible sur le serveur ScalarX (un autre mécanisme n'a pas été vérifié) | Confirmé | J2, écart 2 |
+| Les journaux de connexion sont conservés environ quatre semaines | Confirmé | J2, écart 3 |
 | La connexion SSH aux serveurs est possible avec un identifiant et un mot de passe, depuis n'importe où (essai à faire) | Déclaré | Équipe, 21/09 |
 | Le VPN est protégé par un simple mot de passe | Déclaré | Équipe, 21/09 |
 | Des mots de passe sont partagés dans Discord | Déclaré | Équipe, analyse EBIOS (J1) |
 | Les accès d'un ancien collaborateur ont été réutilisés sur les serveurs | Déclaré | Équipe, 21/09 |
-| Des données personnelles de weevus sont hébergées hors de l'Union européenne | Déclaré | Analyse EBIOS (J1) |
+| Plusieurs ressources AWS (dont des données de généalogie familiale) sont hébergées hors de l'Union européenne | Confirmé | J2, écart 23 |
+| Aucun des 8 comptes AWS (IAM) n'a la double authentification activée, dont 6 comptes administrateurs | Confirmé | J2, écart 13 |
+| Amplify Gen 1 entre en maintenance dès mai 2026 et atteint sa fin de vie le 1er mai 2027 | Confirmé | J2, écart 11 |
 
 ## 3. Comment répondre
 
@@ -55,7 +57,7 @@ Les efforts indiqués sont des estimations de l'équipe technique, à confirmer.
 | D1 | **Remplacer Discord pour les mots de passe par un coffre-fort partagé.** Les mots de passe ne circulent plus dans les messages ; ceux déjà exposés sont renouvelés | Quelques jours pour installer l'outil et renouveler les secrets ; l'outil peut être gratuit ou payant (à chiffrer) | Interdire dès maintenant Discord pour les mots de passe et renouveler les plus critiques (aucun coût) ; choisir l'outil ensuite | Les mots de passe restent lisibles par toute personne ayant accès à l'historique du salon | R-08 et A-02 |
 | D2 | **Sécuriser la connexion SSH aux serveurs.** La connexion directe en administrateur est désactivée ; on se connecte avec une clé personnelle plutôt qu'un mot de passe, et seulement depuis l'entreprise ou le VPN | Serveurs locaux : de quelques heures à 2 jours pour l'équipe ; serveurs externes : selon la réponse du prestataire | 1) Mot de passe long et unique dans le coffre-fort, connexion root désactivée ; 2) accès limité aux adresses de l'entreprise ; 3) clés personnelles | Un mot de passe deviné ou volé donne accès au serveur depuis Internet, y compris à la production | R-06 |
 | D3 | **Demander à chaque prestataire un état des lieux et des engagements écrits** : sauvegardes, comptes, journaux, alerte en cas d'incident, réponse sous 30 jours. La direction, qui détient la relation, transmet la demande | Un courriel par prestataire, puis le suivi ; un service supplémentaire pourrait être facturé (à vérifier) | Obtenir d'abord la confirmation écrite de l'existence des sauvegardes de production, puis le reste | Perte de données de production sans savoir si une sauvegarde existe ; incident chez le prestataire non signalé | R-19 |
-| D4 | **Créer des comptes individuels sur le serveur des projets et formaliser la relation par un contrat ou un avenant** : sécurité, sauvegardes, alerte, protection des données personnelles, contact de secours | Travail du prestataire pour les comptes ; relecture d'un avenant ; coût éventuel à chiffrer | Journal d'usage des comptes partagés tenu par l'équipe, et renouvellement des mots de passe au départ d'une personne ; comptes individuels et avenant ensuite | Impossible de savoir qui a fait quoi ; un ancien collaborateur peut garder un accès ; responsabilités mal cadrées avec le prestataire | R-04 et R-19 à R-21 |
+| D4 | **Créer des comptes individuels sur le serveur ScalarX et formaliser la relation par un contrat ou un avenant** : sécurité, sauvegardes, alerte, protection des données personnelles, contact de secours | Travail du prestataire pour les comptes ; relecture d'un avenant ; coût éventuel à chiffrer | Journal d'usage des comptes partagés tenu par l'équipe, et renouvellement des mots de passe au départ d'une personne ; comptes individuels et avenant ensuite | Impossible de savoir qui a fait quoi ; un ancien collaborateur peut garder un accès ; responsabilités mal cadrées avec le prestataire | R-04 et R-19 à R-21 |
 | D5 | **Ajouter un second facteur au VPN** : à la connexion à distance, un code sur téléphone en plus du mot de passe | Réglage simple si la solution actuelle le permet, remplacement sinon (à vérifier) | Télétravail limité à trois motifs et déclaré, Bureau à distance joignable seulement par le VPN, mot de passe VPN individuel, long et unique | Un mot de passe VPN volé ouvre l'accès au poste de bureau, donc à tout ce qu'il détient | R-07, R-10, R-11 |
 | D6 | **Réserver les droits d'administrateur des serveurs locaux au référent et à son suppléant.** La direction garde un accès de secours, non utilisé au quotidien | Une décision et une configuration : moins d'une journée | La direction garde ses droits ; chaque utilisation est consignée et le référent est prévenu | Un compte compromis donne les droits d'administration ; une seule personne technique en cas d'absence du référent | R-05 |
 | D7 | **Sauvegarder les données critiques locales** (code source dans Gitea, Extranet, configuration) chaque jour, avec une copie hors des locaux, et tester la restauration deux fois par an | Environ 1 à 2 jours de mise en place ; stockage hors des locaux à chiffrer | Sauvegarde hebdomadaire au départ, puis quotidienne ; copie hors des locaux dans un second temps | Perte définitive du code source ou des données de l'Extranet en cas de panne, d'erreur ou de sinistre | R-17 |
