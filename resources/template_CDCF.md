@@ -1,341 +1,187 @@
-# Cahier des Charges Fonctionnel (CDCF) — Application
+# Cahier des Charges Fonctionnel (CDCF) : [Nom de l'application]
 
-> **Document de référence** : modèle à compléter pour cadrer les besoins fonctionnels d'une application web ou mobile.  
-> **Version** : [0.1]  
-> **Date** : [JJ/MM/AAAA]  
-> **Rédigé par** : [Nom / équipe]  
-> **Statut** : [Brouillon / En revue / Validé]
+> **Objet** : [Une phrase décrivant l'application et ses utilisateurs.]
+> **Version** : [1.0]
+> **Date** : [JJ/MM/AAAA]
+> **Rédigé par** : [Nom, fonction]
 
 ---
 
-## Historique des versions
-
-| Version | Date | Auteur | Modifications |
-|---|---|---|---|
-| 0.1 | [JJ/MM/AAAA] | [Nom] | Création du document |
-
-## 1. Présentation générale du projet
+## 1. Présentation du projet
 
 ### 1.1 Contexte
-[Décrire l'organisation, le contexte métier et l'origine du besoin.]
+[Organisation, contexte métier, origine du besoin.]
 
 ### 1.2 Problématique
-[Quel problème l'application doit-elle résoudre ? Quels sont les besoins ou difficultés actuels ?]
+[Difficultés actuelles que l'application doit résoudre.]
 
-### 1.3 Objectifs du projet
-- [Objectif métier 1]
-- [Objectif utilisateur 1]
-- [Objectif opérationnel ou commercial 1]
+### 1.3 Objectifs
+- [Objectif métier]
+- [Objectif utilisateur]
+- [Objectif opérationnel]
 
-### 1.4 Vision du produit
-[Décrire la proposition de valeur et la finalité de l'application.]
-
-### 1.5 Périmètre du projet
-**Inclus dans le périmètre**
+### 1.4 Périmètre
+**Inclus**
 - [Élément inclus]
 
 **Hors périmètre**
 - [Élément explicitement exclu]
 
-### 1.6 Définitions et acronymes
+### 1.5 Définitions
 | Terme | Définition |
 |---|---|
-| MVP | Minimum Viable Product — première version apportant une valeur minimale aux utilisateurs |
 | [Terme] | [Définition] |
 
 ## 2. Utilisateurs et parties prenantes
 
-### 2.1 Public cible
-[Décrire les catégories d'utilisateurs visées.]
+### 2.1 Rôles
+| Rôle | Description | Droits principaux |
+|---|---|---|
+| [Rôle] | [Qui est-ce ?] | [Ce qu'il peut faire] |
 
-### 2.2 Profils utilisateurs et rôles
-
-| Rôle | Description | Objectifs principaux | Droits / permissions |
-|---|---|---|---|
-| Visiteur | [À compléter] | [À compléter] | [À compléter] |
-| Utilisateur inscrit | [À compléter] | [À compléter] | [À compléter] |
-| Administrateur | [À compléter] | [À compléter] | [À compléter] |
-| Autre | [À compléter] | [À compléter] | [À compléter] |
-
-### 2.3 Parties prenantes
-| Partie prenante | Responsabilité / contribution |
+### 2.2 Parties prenantes
+| Partie prenante | Responsabilité |
 |---|---|
-| Commanditaire | [À compléter] |
-| Référent métier | [À compléter] |
-| Product owner | [À compléter] |
-| Équipe de réalisation | [À compléter] |
-| Autre | [À compléter] |
+| Commanditaire | [Nom, rôle dans le projet] |
+| Équipe de réalisation | [Nom, rôle dans le projet] |
 
-## 3. Périmètre fonctionnel et fonctionnalités
+## 3. Fonctionnalités
 
-### 3.1 Vue d'ensemble des modules
+> Regrouper les fonctionnalités par domaine (un tableau par domaine). Une ligne par fonctionnalité : ce qu'elle fait, qui l'utilise, et les cas d'erreur importants. Les règles détaillées vont en section 6, les tests en section 11.
 
-| ID | Module | Description | Priorité |
+### 3.1 [Domaine, ex. : Comptes et accès]
+| ID | Fonctionnalité | Comportement attendu | Acteurs |
 |---|---|---|---|
-| MOD-001 | Authentification | Inscription, connexion, déconnexion, récupération du mot de passe | [Must / Should / Could / Won't] |
-| MOD-002 | Profil utilisateur | Consultation et modification du profil | [Priorité] |
-| MOD-003 | Tableau de bord | Affichage des informations principales | [Priorité] |
-| MOD-004 | Recherche | Recherche, filtres et tri | [Priorité] |
-| MOD-005 | Notifications | Réception et gestion des notifications | [Priorité] |
-| MOD-006 | Administration | Gestion des utilisateurs et des contenus | [Priorité] |
-| MOD-007 | [Module] | [Description] | [Priorité] |
-
-### 3.2 Fiches détaillées des fonctionnalités
-
-> Dupliquer cette fiche pour chaque fonctionnalité. Attribuer un identifiant unique à chaque besoin (FCT-001, FCT-002, etc.).
-
-#### FCT-001 — [Nom de la fonctionnalité]
-
-- **Module :** [Module associé]
-- **Priorité :** [Must have / Should have / Could have / Won't have]
-- **Acteur(s) :** [Rôle(s) concerné(s)]
-- **Objectif :** [Résultat recherché par l'utilisateur]
-- **Description :** [Comportement attendu de la fonctionnalité]
-- **Préconditions :**
-  - [Condition nécessaire avant le démarrage]
-- **Déclencheur :** [Action ou événement qui lance le processus]
-
-**Scénario nominal**
-1. [Étape 1]
-2. [Étape 2]
-3. [Étape 3]
-4. [Résultat attendu]
-
-**Scénarios alternatifs et cas d'erreur**
-- [Cas alternatif ou erreur] → [Comportement attendu]
-- [Cas alternatif ou erreur] → [Comportement attendu]
-
-**Règles de gestion**
-- [RG-001 : règle applicable]
-- [RG-002 : règle applicable]
-
-**Données manipulées**
-- [Donnée, format, caractère obligatoire ou facultatif]
-
-**Critères d'acceptation**
-- [ ] Étant donné [contexte], lorsque [action], alors [résultat attendu].
-- [ ] [Autre critère vérifiable]
-
-**Écrans concernés / références**
-- [Nom de l'écran, lien vers maquette ou annexe]
-
----
+| F-01 | [Nom] | [Description courte, cas d'erreur importants] | [Rôles] |
 
 ## 4. Parcours utilisateurs et navigation
 
 ### 4.1 Parcours principaux
-Décrire les parcours de bout en bout permettant aux utilisateurs d'atteindre leurs objectifs.
+**[Nom du parcours]** ([acteur]) : [étape 1] → [étape 2] → [étape 3]. [Variante ou exception éventuelle.]
 
-#### PAR-001 — [Nom du parcours]
-- **Acteur :** [Rôle]
-- **Objectif :** [Objectif du parcours]
-- **Point d'entrée :** [Écran ou événement de départ]
-- **Point de sortie :** [Écran ou état final]
-
-**Étapes**
-1. [Étape]
-2. [Étape]
-3. [Étape]
-
-**Variantes / exceptions**
-- [Situation et comportement attendu]
-
-### 4.2 Structure de navigation
-[Insérer un schéma de navigation ou décrire les menus, onglets, liens et retours.]
+### 4.2 Navigation
+[Menus, onglets, pages accessibles sans compte.]
 
 ### 4.3 États particuliers
-[Décrire les états vide, chargement, succès, erreur, absence de connexion, session expirée, etc.]
+[Liste vide, chargement, succès, erreur, absence de connexion, session expirée.]
 
-## 5. Exigences relatives à l'interface utilisateur (UI/UX)
+## 5. Interface utilisateur
 
-### 5.1 Inventaire des écrans
+### 5.1 Écrans
+| Écran | Objectif | Utilisateurs |
+|---|---|---|
+| [Nom] | [Objectif] | [Rôles] |
 
-| ID | Écran | Objectif | Utilisateurs concernés | Référence / maquette |
-|---|---|---|---|---|
-| SCR-001 | Écran d'accueil | [À compléter] | [À compléter] | [Lien] |
-| SCR-002 | Connexion | [À compléter] | [À compléter] | [Lien] |
-| SCR-003 | Inscription | [À compléter] | [À compléter] | [Lien] |
-| SCR-004 | Tableau de bord | [À compléter] | [À compléter] | [Lien] |
-| SCR-005 | Profil | [À compléter] | [À compléter] | [Lien] |
-| SCR-006 | Paramètres | [À compléter] | [À compléter] | [Lien] |
-
-### 5.2 Comportements attendus
-- Navigation et retour : [À préciser]
-- Formulaires et champs : [À préciser]
-- Messages de confirmation : [À préciser]
-- Messages d'erreur : [À préciser]
-- États de chargement et états vides : [À préciser]
+### 5.2 Comportements et identité visuelle
+- Formulaires et messages : [À préciser]
 - Adaptation mobile / tablette / ordinateur : [À préciser]
-- Accessibilité : [À préciser]
-
-### 5.3 Identité visuelle et ressources
-[Référencer la charte graphique, les composants, les icônes et les ressources disponibles.]
+- Identité visuelle : [Charte, logo, ressources]
 
 ## 6. Règles de gestion
 
-Lister les règles métier qui conditionnent le comportement de l'application. Elles doivent être précises, non ambiguës et vérifiables.
+> Règles métier précises et vérifiables. Citer chaque fonctionnalité par son nom suivi de son identifiant.
 
-| ID | Règle de gestion | Fonctionnalité(s) concernée(s) | Cas d'application |
-|---|---|---|---|
-| RG-001 | [Ex. : une adresse e-mail ne peut être associée qu'à un seul compte] | [FCT-001] | [À compléter] |
-| RG-002 | [Règle] | [ID] | [À compléter] |
-| RG-003 | [Règle] | [ID] | [À compléter] |
+| ID | Règle | Fonctionnalité concernée |
+|---|---|---|
+| RG-01 | [Règle] | [Nom (F-xx)] |
 
 ## 7. Exigences non fonctionnelles
 
-Préciser les niveaux attendus et, lorsque c'est possible, les rendre mesurables.
-
-| ID | Catégorie | Exigence | Niveau / critère attendu |
+| ID | Catégorie | Exigence | Critère mesurable |
 |---|---|---|---|
-| ENF-001 | Performance | [Temps de réponse attendu] | [Ex. : 95 % des pages chargées en moins de X secondes] |
-| ENF-002 | Sécurité | [Exigences d'authentification et de protection] | [À préciser] |
-| ENF-003 | Confidentialité | [Protection des données personnelles] | [Conformité applicable, notamment RGPD si concerné] |
-| ENF-004 | Disponibilité | [Disponibilité attendue] | [À préciser] |
-| ENF-005 | Compatibilité | [Navigateurs, systèmes et appareils supportés] | [À préciser] |
-| ENF-006 | Accessibilité | [Référentiel et niveau visés] | [À préciser] |
-| ENF-007 | Fiabilité | [Gestion des erreurs et cohérence des données] | [À préciser] |
-| ENF-008 | Évolutivité | [Évolution du nombre d'utilisateurs ou des fonctionnalités] | [À préciser] |
+| ENF-01 | [Sécurité, performance, disponibilité, compatibilité, accessibilité, fiabilité, évolutivité, protection des données] | [Exigence] | [Critère] |
 
-## 8. Données et gestion des informations
+## 8. Données
 
-### 8.1 Données à collecter et traiter
-
-| Donnée | Description | Format | Obligatoire ? | Source | Sensibilité / protection |
-|---|---|---|---|---|---|
-| [Donnée] | [Description] | [Format] | [Oui / Non] | [Utilisateur / système / API] | [À préciser] |
+### 8.1 Données traitées
+| Donnée | Format | Obligatoire | Sensibilité |
+|---|---|---|---|
+| [Donnée] | [Format] | [Oui / Non] | [Faible / moyenne / élevée] |
 
 ### 8.2 Règles de validation
-- [Règle de format]
-- [Règle de cohérence]
-- [Règle de caractère obligatoire]
-- [Règle de déduplication]
+- [Format, cohérence, unicité]
 
 ### 8.3 Accès, conservation et suppression
-- Qui peut consulter ou modifier chaque catégorie de données ?
-- Combien de temps les données sont-elles conservées ?
-- Dans quelles conditions peuvent-elles être exportées, rectifiées ou supprimées ?
-- Quelles règles de sauvegarde et de traçabilité s'appliquent ?
+- [Qui accède à quoi, durée de conservation, suppression, sauvegarde]
 
 ### 8.4 Modèle de données
-[Ajouter si utile un modèle conceptuel de données (MCD), un diagramme ou une description des principales entités et relations.]
+[Renvoi vers le modèle conceptuel en annexe.]
 
-## 9. Notifications et communications
+## 9. Notifications
 
-| ID | Événement déclencheur | Destinataire | Canal | Contenu / objectif | Conditions |
-|---|---|---|---|---|---|
-| NOT-001 | [Ex. : compte créé] | [Utilisateur] | [E-mail] | [Confirmation] | [À préciser] |
-| NOT-002 | [Événement] | [Destinataire] | [Push / SMS / in-app] | [À préciser] | [À préciser] |
+| Événement | Destinataire | Canal | Contenu |
+|---|---|---|---|
+| [Événement] | [Destinataire] | [Courriel / push] | [Contenu] |
 
-Préciser également :
-- Les préférences de notification configurables par l'utilisateur.
-- Les notifications obligatoires ou désactivables.
-- Les règles de fréquence et de regroupement.
-- Le comportement en cas d'échec d'envoi.
+[Préférences, échec d'envoi.]
 
-## 10. Interfaces et intégrations avec des systèmes externes
+## 10. Services externes
 
-| ID | Système / service | Objectif | Données échangées | Sens de l'échange | Contraintes |
-|---|---|---|---|---|---|
-| INT-001 | [Ex. : prestataire de paiement] | [Paiement en ligne] | [À préciser] | [Entrant / sortant / bidirectionnel] | [À préciser] |
-| INT-002 | [Service] | [Objectif] | [À préciser] | [Sens] | [À préciser] |
+| Service | Objectif | Données échangées | En cas d'indisponibilité |
+|---|---|---|---|
+| [Service] | [Objectif] | [Données] | [Comportement attendu] |
 
-Pour chaque intégration, préciser si possible :
-- Les fonctionnalités concernées.
-- Les événements et données échangés.
-- Les conditions d'indisponibilité et les solutions de repli.
-- Les responsabilités du fournisseur externe.
+## 11. Recette
 
-## 11. Critères d'acceptation et stratégie de validation
+### 11.1 Organisation
+[Qui valide, sur quel environnement, à quel moment.]
 
-### 11.1 Principes de validation
-[Décrire qui valide, sur quel environnement, à quel moment et selon quelle procédure.]
-
-### 11.2 Cas de test d'acceptation
-
-| ID | Fonctionnalité | Préconditions | Action / scénario | Résultat attendu | Statut |
-|---|---|---|---|---|---|
-| TEST-001 | [FCT-001] | [À préciser] | [À préciser] | [À préciser] | [À tester] |
-| TEST-002 | [ID] | [À préciser] | [À préciser] | [À préciser] | [À tester] |
+### 11.2 Tests d'acceptation
+| ID | Fonctionnalité | Situation et action | Résultat attendu |
+|---|---|---|---|
+| T-01 | [Nom (F-xx)] | [Étant donné..., lorsque...] | [Alors...] |
 
 ### 11.3 Conditions de validation
-- [Critère de validation global]
-- [Anomalies bloquantes acceptables ou non]
-- [Livrables ou preuves attendus]
+- [Critère global, anomalies bloquantes, preuves attendues]
 
-## 12. Priorisation et périmètre du MVP
+## 12. Priorisation et évolutions
 
-Utiliser la méthode MoSCoW pour classer les besoins.
+### 12.1 Priorités (méthode MoSCoW)
+| Priorité | Fonctionnalités |
+|---|---|
+| Must have (indispensable) | [Noms] |
+| Should have (important) | [Noms] |
+| Could have (souhaitable) | [Noms] |
+| Won't have (exclu) | [Noms] |
 
-| Priorité | Signification | Fonctionnalités concernées |
+### 12.2 Évolutions prévues
+| ID | Évolution | Exigence ou fonctionnalité liée | Priorité |
+|---|---|---|---|
+| EV-01 | [Évolution] | [Nom (ID)] | [Priorité] |
+
+### 12.3 Jalons
+| Jalon | Responsable | Échéance |
 |---|---|---|
-| Must have | Indispensable à la première version | [IDs] |
-| Should have | Important, mais non bloquant pour le MVP | [IDs] |
-| Could have | Amélioration souhaitable | [IDs] |
-| Won't have (pour cette version) | Explicitement reporté ou exclu | [IDs] |
+| [Jalon] | [Nom] | [Date ou condition] |
 
-### 12.1 Périmètre du MVP
-[Décrire précisément les fonctionnalités livrées dans la première version.]
-
-### 12.2 Évolutions envisagées
-[Décrire les fonctionnalités envisagées pour les versions ultérieures.]
-
-## 13. Contraintes, dépendances et hypothèses
+## 13. Contraintes, hypothèses et risques
 
 ### 13.1 Contraintes
-- Budget : [À préciser]
-- Délais et échéances : [À préciser]
-- Contraintes réglementaires ou contractuelles : [À préciser]
-- Contraintes organisationnelles : [À préciser]
-- Contraintes techniques déjà imposées : [À préciser, le cas échéant]
+- [Budget, délais, réglementation, organisation, contraintes techniques imposées]
 
-### 13.2 Dépendances
-[Décrire les services, équipes, données ou décisions dont le projet dépend.]
+### 13.2 Dépendances et hypothèses
+- [Dépendance ou hypothèse]
 
-### 13.3 Hypothèses
-- [Hypothèse à confirmer]
-- [Hypothèse à confirmer]
-
-### 13.4 Risques identifiés
-| Risque | Impact potentiel | Probabilité | Mesure de prévention / réponse |
+### 13.3 Risques
+| Risque | Impact | Probabilité | Réponse |
 |---|---|---|---|
-| [Risque] | [Faible / moyen / élevé] | [Faible / moyenne / élevée] | [À préciser] |
+| [Risque] | [Faible / moyen / élevé] | [Faible / moyenne / élevée] | [Mesure] |
 
-## 14. Livrables et jalons (si applicable)
+## 14. Annexes
+- [Modèle conceptuel de données, matrice des droits, maquettes, documents de référence]
 
-| Livrable / jalon | Description | Responsable | Date cible |
-|---|---|---|---|
-| Validation du CDCF | [Périmètre et besoins validés] | [Nom / rôle] | [Date] |
-| Maquettes validées | [Écrans et parcours] | [Nom / rôle] | [Date] |
-| Recette fonctionnelle | [Tests et validation] | [Nom / rôle] | [Date] |
-| Mise en production | [Lancement] | [Nom / rôle] | [Date] |
-
-## 15. Annexes
-
-- [Lien vers les maquettes / prototypes]
-- [Diagrammes de parcours utilisateurs]
-- [Diagrammes de cas d'utilisation UML]
-- [Modèle conceptuel de données]
-- [Charte graphique]
-- [Documents réglementaires ou contractuels]
-- [Glossaire complémentaire]
-
-## 16. Validation du document
+## 15. Validation du document
 
 | Partie prenante | Nom | Rôle | Décision | Date |
 |---|---|---|---|---|
-| [Nom] | [Nom] | [Commanditaire] | [À valider / Validé] | [Date] |
-| [Nom] | [Nom] | [Référent métier] | [À valider / Validé] | [Date] |
+| [Organisation] | [Nom] | [Rôle] | | |
 
 ---
 
 ## Conseils d'utilisation
 
-1. Commencer par définir les objectifs, les utilisateurs et le périmètre avant de détailler les fonctionnalités.
-2. Attribuer un identifiant unique à chaque module, fonctionnalité, règle métier et exigence.
-3. Décrire les comportements attendus du point de vue de l'utilisateur, sans imposer prématurément une solution technique.
-4. Rédiger des critères d'acceptation observables et testables.
-5. Distinguer clairement les besoins indispensables au MVP des évolutions futures.
-6. Faire relire et valider le document par les parties prenantes concernées.
-7. Mettre à jour l'historique des versions à chaque modification significative.
-
-> **À retenir :** le CDCF décrit ce que l'application doit faire, pour quels utilisateurs et selon quelles règles. Les choix détaillés d'architecture, de technologies, d'hébergement et d'implémentation relèvent généralement du cahier des charges technique.
+1. Le CDCF décrit ce que l'application doit faire, pour qui et selon quelles règles, sans imposer de solution technique.
+2. Rester court : une ligne par fonctionnalité, les détails vont dans les règles de gestion et les tests.
+3. Donner un identifiant seulement aux éléments cités ailleurs dans le document (fonctionnalités, règles, exigences, tests, évolutions), et l'écrire à côté du nom : « Inscription (F-01) » plutôt que « F-01 » seul.
+4. Rédiger des critères mesurables et des tests vérifiables.
+5. Garder les questions ouvertes et les notes de travail dans un document séparé : le CDCF livré est un document propre.
